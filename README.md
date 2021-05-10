@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/treeverse/lakeFS/docs/assets/img/logo_large.png?branch=master"/>
+  <img src="https://github.com/treeverse/lakeFS/blob/master/docs/assets/img/logo_large.png"/>
 </p>
 
 <p align="center">
