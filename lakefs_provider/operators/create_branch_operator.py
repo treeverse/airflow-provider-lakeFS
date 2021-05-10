@@ -9,7 +9,7 @@ from lakefs_provider.hooks.lakefs_hook import LakefsHook
 
 class CreateBranchOperator(BaseOperator):
     """
-    Calls an endpoint on an HTTP system to execute an action.
+    Create a lakeFS branch by calling the lakeFS server.
 
     :param lakefs_conn_id: connection to run the operator with
     :type lakefs_conn_id: str

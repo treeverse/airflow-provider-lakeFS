@@ -18,8 +18,9 @@ setup(
         ]
     },
     license='Apache License 2.0',
-    packages=['lakefs_provider'],
-    install_requires=['apache-airflow>=2.0'],
+    packages=['lakefs_provider', 'lakefs_provider.hooks',
+              'lakefs_provider.sensors', 'lakefs_provider.operators'],
+    install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.40.2'],
     setup_requires=['setuptools', 'wheel'],
     author='Treeverse',
     author_email='support@treeverse.io',

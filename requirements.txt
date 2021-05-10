@@ -1,2 +1,2 @@
-lakefs_client==v0.40.2
+lakefs_client~=v0.40.2
 setuptools~=56.0.0
