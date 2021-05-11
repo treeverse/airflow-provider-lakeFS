@@ -15,7 +15,7 @@ from lakefs_provider.sensors.commit_sensor import CommitSensor
 default_args = {
     "owner": "lakeFS",
     "branch": "example-branch",
-    "repo": "example-repo",
+    "repo": "repo1",
     "default-branch": "main",
     "lakefs_conn_id": "conn_1"
 }

@@ -3,6 +3,7 @@ from typing import Any, Dict
 from airflow.exceptions import AirflowException
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
+from lakefs_client.exceptions import NotFoundException
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
@@ -28,8 +29,6 @@ class FileSensor(BaseSensorOperator):
         'path',
     ]
 
-    object_not_found_error = "Resource Not Found"
-
     @apply_defaults
     def __init__(self, lakefs_conn_id: str, repo: str, branch: str, path: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -46,9 +45,7 @@ class FileSensor(BaseSensorOperator):
             self.log.info("Found file '%s' on branch '%s'", self.path, self.branch)
             return True
 
-        except AirflowException as exc:
-            if self.object_not_found_error in str(exc):
-                self.log.info("File '%s' not found on branch '%s'", self.path, self.branch)
-                return False
+        except NotFoundException:
+            self.log.info("File '%s' not found on branch '%s'", self.path, self.branch)
+            return False
 
-            raise exc

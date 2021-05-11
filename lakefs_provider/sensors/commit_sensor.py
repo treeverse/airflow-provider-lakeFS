@@ -3,6 +3,7 @@ from typing import Any, Dict
 from airflow.exceptions import AirflowException
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
+from lakefs_client.exceptions import NotFoundException
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
@@ -58,9 +59,7 @@ class CommitSensor(BaseSensorOperator):
             self.log.info('Previous ref: %s, current ref %s', self.prev_commit_id, curr_commit_id)
             return curr_commit_id != self.prev_commit_id
 
-        except AirflowException as exc:
-            if (not self.branch_exists) and self.branch_not_found_error in str(exc):
-                return False
-            raise exc
+        except NotFoundException:
+            self.log.info("Branch '%s' not found in repo '%s'", self.branch, self.repo)
+            return False
 
-        return False
