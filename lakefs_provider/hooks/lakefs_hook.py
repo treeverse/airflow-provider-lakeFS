@@ -10,9 +10,9 @@ from airflow.exceptions import AirflowException
 from airflow.hooks.base import BaseHook
 
 
-class LakefsHook(BaseHook):
+class LakeFSHook(BaseHook):
     """
-    LakefsHook that interacts with a lakeFS server.
+    LakeFSHook that interacts with a lakeFS server.
 
     :param lakefs_conn_id: connection that has the uses the extra fields to extract the
         access_key_id, secret_access_key and lakeFS server endpoint.
@@ -26,25 +26,25 @@ class LakefsHook(BaseHook):
         conn = self.get_connection(self.lakefs_conn_id)
 
         configuration = lakefs_client.Configuration()
-        configuration.username = conn.extra_dejson.get('access_key_id', None)
-        configuration.password = conn.extra_dejson.get('secret_access_key', None)
+        configuration.username = conn.extra_dejson.get("access_key_id", None)
+        configuration.password = conn.extra_dejson.get("secret_access_key", None)
         configuration.host = conn.host
 
-        if configuration.username is None:
+        if not configuration.username:
             raise AirflowException("access_key_id must be specified in the lakeFS connection details")
-        if configuration.password is None:
+        if not configuration.password:
             raise AirflowException("secret_access_key must be specified in the lakeFS connection details")
-        if configuration.host is None:
-            raise AirflowException("host must be specified in the lakeFS connection details")
+        if not configuration.host:
+            raise AirflowException("lakeFS endpoint must be specified in the lakeFS connection details")
 
         return LakeFSClient(configuration)
 
-    def create_branch(self, repo: str, name: str, source_branch: str = 'main') -> str:
+    def create_branch(self, repository: str, name: str, source_branch: str = 'main') -> str:
         client = self.get_conn()
         try:
             ref = client.branches.create_branch(
-                repository=repo, branch_creation=models.BranchCreation(name=name,
-                                                                       source=source_branch))
+                repository=repository, branch_creation=models.BranchCreation(name=name,
+                                                                             source=source_branch))
         except Exception as exc:
             raise AirflowException("Failed to create a branch") from exc
 
@@ -61,7 +61,7 @@ class LakefsHook(BaseHook):
         except Exception as exc:
             raise AirflowException("Failed to commit") from exc
 
-        return commit.get('id')
+        return commit.get("id")
 
     def merge(self, repo: str, source_ref: str, destination_branch: str,
               msg: str, metadata: Dict[str, Any] = None) -> str:
@@ -71,7 +71,7 @@ class LakefsHook(BaseHook):
                 repository=repo,
                 source_ref=source_ref,
                 destination_branch=destination_branch,
-                merge= Merge(message=msg, metadata=metadata))
+                merge=Merge(message=msg, metadata=metadata))
 
         except Exception as exc:
             raise AirflowException("Failed to merge") from exc

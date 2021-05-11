@@ -3,7 +3,7 @@ from typing import Any, Dict
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from lakefs_provider.hooks.lakefs_hook import LakefsHook
+from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
 class CommitOperator(BaseOperator):
@@ -18,8 +18,8 @@ class CommitOperator(BaseOperator):
     :type branch: str
     :param msg: The commit message.
     :type msg: str
-    :param metadata: The commit message.
-    :type metadata: Additional metadata to the commit
+    :param metadata: Additional metadata to the commit.
+    :type metadata: Dict[str, str]
     """
 
     # Specify the arguments that are allowed to parse with jinja templating
@@ -43,7 +43,7 @@ class CommitOperator(BaseOperator):
         self.task_id = kwargs.get("task_id")
 
     def execute(self, context: Dict[str, Any]) -> Any:
-        hook = LakefsHook(lakefs_conn_id=self.lakefs_conn_id)
+        hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)
 
         self.log.info("Committing to lakeFS branch '%s' in repo '%s'",
                       self.branch, self.repo)

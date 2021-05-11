@@ -14,8 +14,8 @@ from lakefs_provider.sensors.commit_sensor import CommitSensor
 # You can override them on a per-task basis during operator initialization
 default_args = {
     "owner": "lakeFS",
-    "branch": "example-5",
-    "repo": "repo1",
+    "branch": "example-branch",
+    "repo": "example-repo",
     "default-branch": "main",
     "lakefs_conn_id": "conn_1"
 }
@@ -31,8 +31,8 @@ def lakeFS_workflow():
     To run this example, create a connector with:
     - id: conn_1
     - type: http
-    - host: <LAKEFS_ENDPOINT>
-    - extra: {"access_key_id":"<LAKEFS_ACCESS_KEY_ID>","secret_access_key":"<LAKEFS_SECRET_ACCESS_KEY>"}
+    - host: http://localhost:8000
+    - extra: {"access_key_id":"AKIAIOSFODNN7EXAMPLE","secret_access_key":"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"}
     """
 
     # Create the branch to run on
@@ -53,7 +53,7 @@ def lakeFS_workflow():
     task_commit = CommitOperator(
         task_id='commit',
         msg="committing to lakeFS using airflow!",
-        metadata={"committer": "airflow-operator"}
+        metadata={"committed_from": "airflow-operator"}
     )
 
     # Wait until the commit is completed.

@@ -4,7 +4,7 @@ from airflow.exceptions import AirflowException
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
 
-from lakefs_provider.hooks.lakefs_hook import LakefsHook
+from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
 class CommitSensor(BaseSensorOperator):
@@ -40,7 +40,7 @@ class CommitSensor(BaseSensorOperator):
 
         # Branch may not exists when this sensor was created and that's ok
         self.branch_exists = branch_exists
-        self.hook = LakefsHook(lakefs_conn_id)
+        self.hook = LakeFSHook(lakefs_conn_id)
         self.prev_commit_id = None
 
     def poke(self, context: Dict[Any, Any]) -> bool:
@@ -48,6 +48,7 @@ class CommitSensor(BaseSensorOperator):
             self.prev_commit_id = context.get(self.current_commit_id_key, None)
             if self.prev_commit_id is None:
                 self.prev_commit_id = self.hook.get_branch_commit_id(self.repo, self.branch)
+                return False
 
         self.log.info('Poking: branch %s on repo %s', self.branch, self.repo)
         try:
@@ -60,5 +61,6 @@ class CommitSensor(BaseSensorOperator):
         except AirflowException as exc:
             if (not self.branch_exists) and self.branch_not_found_error in str(exc):
                 return False
+            raise exc
 
         return False

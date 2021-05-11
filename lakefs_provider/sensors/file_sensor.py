@@ -4,7 +4,7 @@ from airflow.exceptions import AirflowException
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
 
-from lakefs_provider.hooks.lakefs_hook import LakefsHook
+from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
 class FileSensor(BaseSensorOperator):
@@ -15,9 +15,9 @@ class FileSensor(BaseSensorOperator):
     :type lakefs_conn_id: str
     :param repo: The lakeFS repo.
     :type repo: str
-    :param branch: The branch to sense for
+    :param branch: The branch to sense for.
     :type branch: str
-    :param path: The path to wait for
+    :param path: The path to wait for.
     :type path: str
     """
 
@@ -38,7 +38,7 @@ class FileSensor(BaseSensorOperator):
         self.branch = branch
         self.path = path
 
-        self.hook = LakefsHook(lakefs_conn_id)
+        self.hook = LakeFSHook(lakefs_conn_id)
 
     def poke(self, context: Dict[Any, Any]) -> bool:
         try:
@@ -51,4 +51,4 @@ class FileSensor(BaseSensorOperator):
                 self.log.info("File '%s' not found on branch '%s'", self.path, self.branch)
                 return False
 
-        return False
+            raise exc

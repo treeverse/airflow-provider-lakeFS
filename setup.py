@@ -23,7 +23,7 @@ setup(
     install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.40.2'],
     setup_requires=['setuptools', 'wheel'],
     author='Treeverse',
-    author_email='support@treeverse.io',
+    author_email='services@treeverse.io',
     url='https://lakefs.io',
     python_requires='~=3.7',
 )

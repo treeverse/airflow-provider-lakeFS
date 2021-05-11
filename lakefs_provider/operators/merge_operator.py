@@ -3,7 +3,7 @@ from typing import Any, Dict
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from lakefs_provider.hooks.lakefs_hook import LakefsHook
+from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
 class MergeOperator(BaseOperator):
@@ -47,7 +47,7 @@ class MergeOperator(BaseOperator):
         self.task_id = kwargs.get("task_id")
 
     def execute(self, context: Dict[str, Any]) -> Any:
-        hook = LakefsHook(lakefs_conn_id=self.lakefs_conn_id)
+        hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)
 
         self.log.info("Merging to lakeFS branch '%s' in repo '%s' from source ref '%s'",
                       self.destination_branch, self.repo, self.source_ref)

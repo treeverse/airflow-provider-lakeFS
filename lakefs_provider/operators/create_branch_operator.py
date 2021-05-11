@@ -4,7 +4,7 @@ from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from lakefs_provider.hooks.lakefs_hook import LakefsHook
+from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
 class CreateBranchOperator(BaseOperator):
@@ -39,7 +39,7 @@ class CreateBranchOperator(BaseOperator):
         self.source_branch = source_branch
 
     def execute(self, context: Dict[str, Any]) -> Any:
-        hook = LakefsHook(lakefs_conn_id=self.lakefs_conn_id)
+        hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)
 
         self.log.info("Create lakeFS branch '%s' in repo '%s' from source '%s'",
                       self.branch, self.repo, self.source_branch)
