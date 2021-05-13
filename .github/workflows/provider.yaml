@@ -1,0 +1,87 @@
+name: Provider
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-provider:
+    name: build latest provider
+    runs-on: ubuntu-20.04
+    env:
+      KEY: "AKIAIOSFODNN7EXAMPLE"
+      SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install requirements
+        run: pip install -r requirements.txt
+
+      - name: Build package
+        run: |
+          python3 -m pip install build
+          python3 -m build
+
+      - name: Install astro
+        env:
+          TAG: 0.25.0
+        run: curl -sSL https://install.astronomer.io | sudo bash -s
+
+      - name: Create astro dev env
+        run: mkdir astro && cd astro && astro dev init
+
+      - name: Copy files
+        run: |
+          cp -R ./dist/ astro/
+          cp ./lakefs_provider/example_dags/lakefs-dag.py astro/dags/
+
+      - name: Insert Dockerfile pip install
+        run: printf "\nRUN pip install --user dist/airflow_provider_lakefs-0.0.2-py3-none-any.whl" >> astro/Dockerfile
+
+      - name: Start astro
+        run: |
+          cd astro && astro dev start
+
+      - name: spin up lakeFS
+        run: docker-compose -f ops/docker-compose.yaml up --quiet-pull -d && sleep 30
+
+      - name: Setup lakeFS
+        run: |
+          curl localhost:8000/api/v1/setup_lakefs -H "Content-Type: application/json" --request POST --data '{"username":"test","key":{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}}'
+
+      - name: Create test repo
+        run: |
+         export BASIC_AUTH=$(echo -n "${{ env.KEY }}:${{ env.SECRET }}" | base64)
+         curl localhost:8000/api/v1/repositories -H "Content-Type: application/json" -H "Authorization: Basic $(echo $BASIC_AUTH | tr -d ' ')" --request POST --data '{"name":"example-repo","storage_namespace":"local://data/"}'
+
+      - name: Run lakeFS DAG
+        run: |
+          docker container exec astrobfff1f_scheduler_1 airflow connections add conn_1 --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-extra='{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}'
+          docker container exec astrobfff1f_scheduler_1 airflow dags unpause lakeFS_workflow
+          docker container exec astrobfff1f_scheduler_1 airflow dags trigger lakeFS_workflow && sleep 30
+
+      - name: Upload file to sense
+        env:
+          # To avoid the lack of region - see https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
+          AWS_EC2_METADATA_DISABLED: true
+        run: echo "hello world" | AWS_ACCESS_KEY_ID=${{ env.KEY }} AWS_SECRET_ACCESS_KEY=${{ env.SECRET }} aws s3 cp --endpoint-url=http://s3.local.lakefs.io:8000 - s3://example-repo/example-branch/file/to/sense/_SUCCESS
+
+      - name: Wait until file is available on main
+        env:
+          # To avoid the lack of region - see https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
+          AWS_EC2_METADATA_DISABLED: true
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 3
+          max_attempts: 30
+          command: AWS_ACCESS_KEY_ID=${{ env.KEY }} AWS_SECRET_ACCESS_KEY=${{ env.SECRET }} aws s3 cp --endpoint-url=http://s3.local.lakefs.io:8000 s3://example-repo/main/file/to/sense/_SUCCESS -
+
+      - name: lakeFS logs
+        if: ${{ always() }}
+        run: docker-compose -f ops/docker-compose.yaml logs --tail=1000 lakefs
+
+      - name: airflow logs
+        if: ${{ always() }}
+        run: docker container exec astrobfff1f_scheduler_1 find /usr/local/airflow/logs/lakeFS_workflow/ -type f -exec cat {} \;
