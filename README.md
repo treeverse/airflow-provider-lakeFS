@@ -15,9 +15,8 @@
 
 lakeFS airflow provider enables a smooth integration of lakeFS with airflow's DAGs.
 "Use the lakeFS provider to create branches, commit objects, wait for files to be written, and more."
-to a branch and more.
 
-For usage example, check out the [example DAG](lakefs_provider/example_dags/lakefs-dag.py)
+For usage example, check out the [example DAG](https://github.com/treeverse/airflow-provider-lakeFS/blob/main/lakefs_provider/example_dags/lakefs-dag.py)
 
 
 ## What is lakeFS
