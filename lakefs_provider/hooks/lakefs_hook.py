@@ -16,6 +16,7 @@ class LakeFSHook(BaseHook):
 
     :param lakefs_conn_id: connection that has the uses the extra fields to extract the
         access_key_id, secret_access_key and lakeFS server endpoint.
+    :type lakefs_conn_id: str
     """
 
     def __init__(self, lakefs_conn_id: str) -> None:
