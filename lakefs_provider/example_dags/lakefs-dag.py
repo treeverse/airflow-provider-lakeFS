@@ -72,7 +72,9 @@ def lakeFS_workflow():
         metadata={"committer": "airflow-operator"}
     )
 
-    task_create_branch >> task_sense_file >> [task_sense_commit, task_commit] >> task_merge
+    task_create_branch >> [task_sense_file, task_sense_commit]
+    task_sense_file >> task_commit
+    task_sense_commit >> task_merge
 
 
 sample_workflow_dag = lakeFS_workflow()
