@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 """Perform the package airflow-provider-lakeFS setup."""
 setup(
     name='airflow-provider-lakefs',
-    version="0.41.0",
+    version="0.41.0.1",
     description='A lakeFS provider package built by Treeverse.',
     long_description=long_description,
     long_description_content_type='text/markdown',
