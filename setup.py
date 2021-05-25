@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 """Perform the package airflow-provider-lakeFS setup."""
 setup(
     name='airflow-provider-lakefs',
-    version="0.41.0",
+    version="0.41.0.1",
     description='A lakeFS provider package built by Treeverse.',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -20,7 +20,7 @@ setup(
     license='Apache License 2.0',
     packages=['lakefs_provider', 'lakefs_provider.hooks',
               'lakefs_provider.sensors', 'lakefs_provider.operators'],
-    install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.40.2'],
+    install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.41.0.1'],
     setup_requires=['setuptools', 'wheel'],
     author='Treeverse',
     author_email='services@treeverse.io',
