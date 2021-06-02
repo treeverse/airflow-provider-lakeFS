@@ -8,7 +8,7 @@ from lakefs_client.exceptions import NotFoundException
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
-class FileSensor(BaseSensorOperator):
+class LakeFSFileSensor(BaseSensorOperator):
     """
     Waits for the given file to appear
 

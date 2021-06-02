@@ -6,7 +6,7 @@ from airflow.utils.decorators import apply_defaults
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
-class CommitOperator(BaseOperator):
+class LakeFSCommitOperator(BaseOperator):
     """
     Commit changes to a lakeFS branch.
 
