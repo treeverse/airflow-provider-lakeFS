@@ -3,11 +3,11 @@ from typing import Dict
 from airflow.decorators import dag
 from airflow.utils.dates import days_ago
 
-from lakefs_provider.operators.create_branch_operator import CreateBranchOperator
-from lakefs_provider.operators.merge_operator import MergeOperator
-from lakefs_provider.operators.commit_operator import CommitOperator
-from lakefs_provider.sensors.file_sensor import FileSensor
-from lakefs_provider.sensors.commit_sensor import CommitSensor
+from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchOperator
+from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
+from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
+from lakefs_provider.sensors.file_sensor import LakeFSFileSensor
+from lakefs_provider.sensors.commit_sensor import LakeFSCommitSensor
 
 
 # These args will get passed on to each operator
@@ -36,35 +36,35 @@ def lakeFS_workflow():
     """
 
     # Create the branch to run on
-    task_create_branch = CreateBranchOperator(
+    task_create_branch = LakeFSCreateBranchOperator(
         task_id='create_branch',
         source_branch=default_args.get('default-branch')
     )
 
     # Checks periodically for the path.
     # DAG continues only when the file exists.
-    task_sense_file = FileSensor(
+    task_sense_file = LakeFSFileSensor(
         task_id='sense_file',
         path="file/to/sense/_SUCCESS"
     )
 
     # Commit the changes to the branch.
     # (Also a good place to validate the new changes before committing them)
-    task_commit = CommitOperator(
+    task_commit = LakeFSCommitOperator(
         task_id='commit',
         msg="committing to lakeFS using airflow!",
         metadata={"committed_from": "airflow-operator"}
     )
 
     # Wait until the commit is completed.
-    # Not really necessary in this DAG, since the CommitOperator won't return before that.
+    # Not really necessary in this DAG, since the LakeFSCommitOperator won't return before that.
     # Nonetheless we added it to show the full capabilities.
-    task_sense_commit = CommitSensor(
+    task_sense_commit = LakeFSCommitSensor(
         task_id='sense_commit',
     )
 
     # Merge the changes back to the main branch.
-    task_merge = MergeOperator(
+    task_merge = LakeFSMergeOperator(
         task_id='merge_branches',
         source_ref=default_args.get('branch'),
         destination_branch=default_args.get('default-branch'),

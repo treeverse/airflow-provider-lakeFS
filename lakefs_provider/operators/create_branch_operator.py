@@ -7,7 +7,7 @@ from airflow.utils.decorators import apply_defaults
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
-class CreateBranchOperator(BaseOperator):
+class LakeFSCreateBranchOperator(BaseOperator):
     """
     Create a lakeFS branch by calling the lakeFS server.
 

@@ -8,7 +8,7 @@ from lakefs_client.exceptions import NotFoundException
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
-class CommitSensor(BaseSensorOperator):
+class LakeFSCommitSensor(BaseSensorOperator):
     """
     Executes a get branch operation until that branch was committed.
 

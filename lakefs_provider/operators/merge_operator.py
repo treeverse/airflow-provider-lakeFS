@@ -6,7 +6,7 @@ from airflow.utils.decorators import apply_defaults
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 
-class MergeOperator(BaseOperator):
+class LakeFSMergeOperator(BaseOperator):
     """
     Merge source branch to destination branch
 
