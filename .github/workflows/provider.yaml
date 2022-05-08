@@ -63,6 +63,10 @@ jobs:
           docker-compose exec -T scheduler airflow dags trigger lakeFS_workflow
           sleep 30
 
+      - name: scheduler logs
+        if: ${{ failure() }}
+        run: docker-compose logs --tail=1000 scheduler
+
       - name: Upload file to sense
         env:
           # To avoid the lack of region - see https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
