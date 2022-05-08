@@ -58,9 +58,10 @@ jobs:
 
       - name: Run lakeFS DAG
         run: |
-          docker container exec astrobfff1f_scheduler_1 airflow connections add conn_1 --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-extra='{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}'
-          docker container exec astrobfff1f_scheduler_1 airflow dags unpause lakeFS_workflow
-          docker container exec astrobfff1f_scheduler_1 airflow dags trigger lakeFS_workflow && sleep 30
+          docker-compose exec -T scheduler airflow connections add conn_1 --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-extra='{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}'
+          docker-compose exec -T scheduler airflow dags unpause lakeFS_workflow
+          docker-compose exec -T scheduler airflow dags trigger lakeFS_workflow
+          sleep 30
 
       - name: Upload file to sense
         env:
@@ -84,4 +85,4 @@ jobs:
 
       - name: airflow logs
         if: ${{ always() }}
-        run: docker container exec astrobfff1f_scheduler_1 find /usr/local/airflow/logs/lakeFS_workflow/ -type f -exec cat {} \;
+        run: docker-compose exec -T scheduler find /usr/local/airflow/logs/lakeFS_workflow/ -type f -exec cat {} \;
