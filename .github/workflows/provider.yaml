@@ -26,7 +26,7 @@ jobs:
 
       - name: Install astro
         env:
-          TAG: 0.25.0
+          TAG: 0.28.1
         run: curl -sSL https://install.astronomer.io | sudo bash -s
 
       - name: Create astro dev env
