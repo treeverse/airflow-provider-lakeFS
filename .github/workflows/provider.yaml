@@ -63,7 +63,7 @@ jobs:
           docker-compose exec -T scheduler airflow dags trigger lakeFS_workflow
           sleep 30
 
-      - name: scheduler logs
+      - name: scheduler logs on failure
         if: ${{ failure() }}
         run: docker-compose logs --tail=1000 scheduler
 
