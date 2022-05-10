@@ -26,7 +26,7 @@ jobs:
 
       - name: Install astro
         env:
-          TAG: 0.25.0
+          TAG: 0.28.1
         run: curl -sSL https://install.astronomer.io | sudo bash -s
 
       - name: Create astro dev env
@@ -58,9 +58,11 @@ jobs:
 
       - name: Run lakeFS DAG
         run: |
-          docker container exec astrobfff1f_scheduler_1 airflow connections add conn_1 --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-extra='{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}'
-          docker container exec astrobfff1f_scheduler_1 airflow dags unpause lakeFS_workflow
-          docker container exec astrobfff1f_scheduler_1 airflow dags trigger lakeFS_workflow && sleep 30
+          cd astro
+          astro dev run connections add conn_1 --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-extra='{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}'
+          astro dev run dags unpause lakeFS_workflow
+          astro dev run dags trigger lakeFS_workflow
+          sleep 30
 
       - name: Upload file to sense
         env:
@@ -84,4 +86,6 @@ jobs:
 
       - name: airflow logs
         if: ${{ always() }}
-        run: docker container exec astrobfff1f_scheduler_1 find /usr/local/airflow/logs/lakeFS_workflow/ -type f -exec cat {} \;
+        run: |
+          cd astro
+          astro dev logs --scheduler
