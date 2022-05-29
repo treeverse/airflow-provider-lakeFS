@@ -9,6 +9,7 @@ from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchO
 from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
 from lakefs_provider.operators.upload_operator import LakeFSUploadOperator
 from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
+from lakefs_provider.operators.get_commit_operator import LakeFSGetCommitOperator
 from lakefs_provider.sensors.file_sensor import LakeFSFileSensor
 from lakefs_provider.sensors.commit_sensor import LakeFSCommitSensor
 
@@ -56,6 +57,11 @@ def lakeFS_workflow():
         path="path/to/_SUCCESS",
         content=NamedStringIO(content='It is not enough to succeed.  Others must fail.', name='content'))
 
+    task_get_branch_commit = LakeFSGetCommitOperator(
+        do_xcom_push=True,
+        task_id='get_branch_commit',
+        ref=default_args['branch'])
+
     # Checks periodically for the path.
     # DAG continues only when the file exists.
     task_sense_file = LakeFSFileSensor(
@@ -87,8 +93,9 @@ def lakeFS_workflow():
         metadata={"committer": "airflow-operator"}
     )
 
-    task_create_branch >> [task_create_file >> task_sense_file >> task_commit,
-                           task_sense_commit >> task_merge]
+    task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit]
+    task_create_file >> task_sense_file >> task_commit
+    task_sense_commit >> task_merge
 
 
 sample_workflow_dag = lakeFS_workflow()

@@ -83,6 +83,19 @@ class LakeFSHook(BaseHook):
         ref = client.branches.get_branch(repo, name)
         return ref.commit_id
 
+    def get_commit(self, repo: str, ref: str) -> Dict[str, str]:
+        client = self.get_conn()
+        details = client.commits.get_commit(repo, ref)
+        return {
+            "id": details.id,
+            "parents": details.parents,
+            "committer": details.committer,
+            "message": details.message,
+            "creation_date": details.creation_date,
+            "meta_range_id": details.meta_range_id,
+            "metadata": details.metadata,
+        }
+
     def stat_object(self, repo: str, ref: str, path: str) -> ObjectStats:
         client = self.get_conn()
         return client.objects.stat_object(repository=repo, ref=ref, path=path)
