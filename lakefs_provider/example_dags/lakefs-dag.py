@@ -82,6 +82,7 @@ def lakeFS_workflow():
     # Nonetheless we added it to show the full capabilities.
     task_sense_commit = LakeFSCommitSensor(
         task_id='sense_commit',
+        prev_commit_id='''{{ task_instance.xcom_pull(task_ids='get_branch_commit', key='return_value').id }}''',
     )
 
     # Merge the changes back to the main branch.

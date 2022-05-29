@@ -85,7 +85,9 @@ class LakeFSHook(BaseHook):
 
     def get_commit(self, repo: str, ref: str) -> Dict[str, str]:
         client = self.get_conn()
-        details = client.commits.get_commit(repo, ref)
+        # Actually ask for a log of length 1, because of treeverse/lakeFS#3436.
+        response = client.refs.log_commits(repo, ref, amount=1)
+        details = response.results[0]
         return {
             "id": details.id,
             "parents": details.parents,
