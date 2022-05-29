@@ -66,7 +66,8 @@ def lakeFS_workflow():
     # DAG continues only when the file exists.
     task_sense_file = LakeFSFileSensor(
         task_id='sense_file',
-        path="path/to/_SUCCESS"
+        path='path/to/_SUCCESS',
+        mode='reschedule',
     )
 
     # Commit the changes to the branch.
@@ -83,6 +84,7 @@ def lakeFS_workflow():
     task_sense_commit = LakeFSCommitSensor(
         task_id='sense_commit',
         prev_commit_id='''{{ task_instance.xcom_pull(task_ids='get_branch_commit', key='return_value').id }}''',
+        mode='reschedule',
     )
 
     # Merge the changes back to the main branch.
