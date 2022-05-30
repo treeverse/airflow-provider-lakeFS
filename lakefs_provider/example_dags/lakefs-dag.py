@@ -1,10 +1,13 @@
 from typing import Dict
 
+from io import StringIO
+
 from airflow.decorators import dag
 from airflow.utils.dates import days_ago
 
 from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchOperator
 from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
+from lakefs_provider.operators.upload_operator import LakeFSUploadOperator
 from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
 from lakefs_provider.sensors.file_sensor import LakeFSFileSensor
 from lakefs_provider.sensors.commit_sensor import LakeFSCommitSensor
@@ -17,8 +20,14 @@ default_args = {
     "branch": "example-branch",
     "repo": "example-repo",
     "default-branch": "main",
-    "lakefs_conn_id": "conn_1"
+    "lakefs_conn_id": "conn_lakefs"
 }
+
+
+class NamedStringIO(StringIO):
+    def __init__(self, content: str, name: str) -> None:
+        super().__init__(content)
+        self.name = name
 
 
 @dag(default_args=default_args, start_date=days_ago(2), schedule_interval=None, tags=['example'])
@@ -29,7 +38,7 @@ def lakeFS_workflow():
     Showcases the lakeFS provider package's operators and sensors.
 
     To run this example, create a connector with:
-    - id: conn_1
+    - id: conn_lakefs
     - type: http
     - host: http://localhost:8000
     - extra: {"access_key_id":"AKIAIOSFODNN7EXAMPLE","secret_access_key":"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"}
@@ -41,11 +50,17 @@ def lakeFS_workflow():
         source_branch=default_args.get('default-branch')
     )
 
+    # Create a path.
+    task_create_file = LakeFSUploadOperator(
+        task_id='upload_file',
+        path="path/to/_SUCCESS",
+        content=NamedStringIO(content='It is not enough to succeed.  Others must fail.', name='content'))
+
     # Checks periodically for the path.
     # DAG continues only when the file exists.
     task_sense_file = LakeFSFileSensor(
         task_id='sense_file',
-        path="file/to/sense/_SUCCESS"
+        path="path/to/_SUCCESS"
     )
 
     # Commit the changes to the branch.
@@ -72,9 +87,8 @@ def lakeFS_workflow():
         metadata={"committer": "airflow-operator"}
     )
 
-    task_create_branch >> [task_sense_file, task_sense_commit]
-    task_sense_file >> task_commit
-    task_sense_commit >> task_merge
+    task_create_branch >> [task_create_file >> task_sense_file >> task_commit,
+                           task_sense_commit >> task_merge]
 
 
 sample_workflow_dag = lakeFS_workflow()

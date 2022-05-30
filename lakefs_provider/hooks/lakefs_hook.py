@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, IO
 
 import lakefs_client
 from lakefs_client import models
@@ -57,6 +57,16 @@ class LakeFSHook(BaseHook):
 
         return commit.get("id")
 
+    def upload(self, repo: str, branch: str, path: str, content: IO) -> str:
+        client = self.get_conn()
+        upload = client.objects.upload_object(
+            repository=repo,
+            branch=branch,
+            path=path,
+            content=content)
+
+        return upload
+
     def merge(self, repo: str, source_ref: str, destination_branch: str,
               msg: str, metadata: Dict[str, Any] = None) -> str:
         client = self.get_conn()
@@ -76,5 +86,3 @@ class LakeFSHook(BaseHook):
     def stat_object(self, repo: str, ref: str, path: str) -> ObjectStats:
         client = self.get_conn()
         return client.objects.stat_object(repository=repo, ref=ref, path=path)
-
-
