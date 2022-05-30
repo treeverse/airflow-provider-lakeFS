@@ -9,6 +9,7 @@ from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchO
 from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
 from lakefs_provider.operators.upload_operator import LakeFSUploadOperator
 from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
+from lakefs_provider.operators.get_commit_operator import LakeFSGetCommitOperator
 from lakefs_provider.sensors.file_sensor import LakeFSFileSensor
 from lakefs_provider.sensors.commit_sensor import LakeFSCommitSensor
 
@@ -56,11 +57,17 @@ def lakeFS_workflow():
         path="path/to/_SUCCESS",
         content=NamedStringIO(content='It is not enough to succeed.  Others must fail.', name='content'))
 
+    task_get_branch_commit = LakeFSGetCommitOperator(
+        do_xcom_push=True,
+        task_id='get_branch_commit',
+        ref=default_args['branch'])
+
     # Checks periodically for the path.
     # DAG continues only when the file exists.
     task_sense_file = LakeFSFileSensor(
         task_id='sense_file',
-        path="path/to/_SUCCESS"
+        path='path/to/_SUCCESS',
+        mode='reschedule',
     )
 
     # Commit the changes to the branch.
@@ -76,6 +83,8 @@ def lakeFS_workflow():
     # Nonetheless we added it to show the full capabilities.
     task_sense_commit = LakeFSCommitSensor(
         task_id='sense_commit',
+        prev_commit_id='''{{ task_instance.xcom_pull(task_ids='get_branch_commit', key='return_value').id }}''',
+        mode='reschedule',
     )
 
     # Merge the changes back to the main branch.
@@ -87,8 +96,9 @@ def lakeFS_workflow():
         metadata={"committer": "airflow-operator"}
     )
 
-    task_create_branch >> [task_create_file >> task_sense_file >> task_commit,
-                           task_sense_commit >> task_merge]
+    task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit]
+    task_create_file >> task_sense_file >> task_commit
+    task_sense_commit >> task_merge
 
 
 sample_workflow_dag = lakeFS_workflow()
