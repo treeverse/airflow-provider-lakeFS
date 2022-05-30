@@ -64,13 +64,7 @@ jobs:
           astro dev run dags trigger lakeFS_workflow
           sleep 30
 
-      - name: Upload file to sense
-        env:
-          # To avoid the lack of region - see https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
-          AWS_EC2_METADATA_DISABLED: true
-        run: echo "hello world" | AWS_ACCESS_KEY_ID=${{ env.KEY }} AWS_SECRET_ACCESS_KEY=${{ env.SECRET }} aws s3 cp --endpoint-url=http://s3.local.lakefs.io:8000 - s3://example-repo/example-branch/file/to/sense/_SUCCESS
-
-      - name: Wait until file is available on main
+      - name: Wait until Airflow makes output file available on main
         env:
           # To avoid the lack of region - see https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
           AWS_EC2_METADATA_DISABLED: true
@@ -78,7 +72,7 @@ jobs:
         with:
           timeout_minutes: 3
           max_attempts: 30
-          command: AWS_ACCESS_KEY_ID=${{ env.KEY }} AWS_SECRET_ACCESS_KEY=${{ env.SECRET }} aws s3 cp --endpoint-url=http://s3.local.lakefs.io:8000 s3://example-repo/main/file/to/sense/_SUCCESS -
+          command: AWS_ACCESS_KEY_ID=${{ env.KEY }} AWS_SECRET_ACCESS_KEY=${{ env.SECRET }} aws s3 cp --endpoint-url=http://s3.local.lakefs.io:8000 s3://example-repo/main/path/to/_SUCCESS -
 
       - name: lakeFS logs
         if: ${{ always() }}
