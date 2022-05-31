@@ -3,12 +3,10 @@
 </p>
 
 <p align="center">
-	<a href="https://raw.githubusercontent.com/treeverse/lakeFS/master/LICENSE" >
-		<img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache License" /></a>
-	<a href="https://artifacthub.io/packages/search?repo=lakefs">
-		<img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakefs" alt="Artifact HUB" /></a>
-	<a href="https://github.com/treeverse/lakeFS/blob/master/CODE_OF_CONDUCT.md">
-		<img src="https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg" alt="code of conduct"></a>
+	[![Apache license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://raw.githubusercontent.com/treeverse/lakeFS/master/LICENSE)
+	[![Provider test status](https://github.com/treeverse/airflow-provider-lakeFS/actions/workflows/provider.yaml/badge.svg)](https://github.com/treeverse/airflow-provider-lakeFS/actions/workflows/provider.yaml)
+	[![PyPI version](https://badge.fury.io/py/airflow-provider-lakefs.svg)](https://badge.fury.io/py/airflow-provider-lakefs)
+	[![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](https://github.com/treeverse/lakeFS/blob/master/CODE_OF_CONDUCT.md)
 </p>
 
 ## lakeFS airflow provider
