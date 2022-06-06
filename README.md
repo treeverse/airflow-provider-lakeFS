@@ -2,12 +2,11 @@
   <img src="https://raw.githubusercontent.com/treeverse/lakeFS/master/docs/assets/img/logo_large.png"/>
 </p>
 
-<p align="center">
-	[![Apache license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://raw.githubusercontent.com/treeverse/lakeFS/master/LICENSE)
-	[![Provider test status](https://github.com/treeverse/airflow-provider-lakeFS/actions/workflows/provider.yaml/badge.svg)](https://github.com/treeverse/airflow-provider-lakeFS/actions/workflows/provider.yaml)
-	[![PyPI version](https://badge.fury.io/py/airflow-provider-lakefs.svg)](https://badge.fury.io/py/airflow-provider-lakefs)
-	[![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](https://github.com/treeverse/lakeFS/blob/master/CODE_OF_CONDUCT.md)
-</p>
+[![Apache license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://raw.githubusercontent.com/treeverse/lakeFS/master/LICENSE)
+[![Provider test status](https://github.com/treeverse/airflow-provider-lakeFS/actions/workflows/provider.yaml/badge.svg)](https://github.com/treeverse/airflow-provider-lakeFS/actions/workflows/provider.yaml)
+[![PyPI version](https://badge.fury.io/py/airflow-provider-lakefs.svg)](https://badge.fury.io/py/airflow-provider-lakefs)
+[![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](https://github.com/treeverse/lakeFS/blob/master/CODE_OF_CONDUCT.md)
+
 
 ## lakeFS airflow provider
 
