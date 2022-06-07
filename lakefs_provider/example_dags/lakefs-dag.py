@@ -1,10 +1,15 @@
 from typing import Dict
+from collections.abc import Sequence
+
+from itertools import zip_longest
 
 from io import StringIO
 
 from airflow.decorators import dag
 from airflow.utils.dates import days_ago
+from airflow.exceptions import AirflowFailException
 
+from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchOperator
 from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
 from lakefs_provider.operators.upload_operator import LakeFSUploadOperator
@@ -12,6 +17,7 @@ from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
 from lakefs_provider.operators.get_commit_operator import LakeFSGetCommitOperator
 from lakefs_provider.sensors.file_sensor import LakeFSFileSensor
 from lakefs_provider.sensors.commit_sensor import LakeFSCommitSensor
+from airflow.operators.python import PythonOperator
 
 
 # These args will get passed on to each operator
@@ -23,6 +29,20 @@ default_args = {
     "default-branch": "main",
     "lakefs_conn_id": "conn_lakefs"
 }
+
+
+COMMIT_MESSAGE_1 = 'committing to lakeFS using airflow!'
+MERGE_MESSAGE_1 = 'merging to the default branch'
+
+
+def check_logs(task_instance, repo: str, ref: str, msgs: Sequence[str], amount: int=100) -> None:
+    hook = LakeFSHook(default_args['lakefs_conn_id'])
+    for (msg, commit) in zip_longest(msgs, hook.log_commits(repo, ref, amount)):
+        if msg is None:
+            # Matched all msgs!
+            return
+        if msg != commit['message']:
+            raise AirflowFailException(f'Got message {commit["message"]} instead of expected message {msg}')
 
 
 class NamedStringIO(StringIO):
@@ -74,7 +94,7 @@ def lakeFS_workflow():
     # (Also a good place to validate the new changes before committing them)
     task_commit = LakeFSCommitOperator(
         task_id='commit',
-        msg="committing to lakeFS using airflow!",
+        msg=COMMIT_MESSAGE_1,
         metadata={"committed_from": "airflow-operator"}
     )
 
@@ -90,15 +110,37 @@ def lakeFS_workflow():
     # Merge the changes back to the main branch.
     task_merge = LakeFSMergeOperator(
         task_id='merge_branches',
+        do_xcom_push=True,
         source_ref=default_args.get('branch'),
         destination_branch=default_args.get('default-branch'),
-        msg='merging to the default branch',
+        msg=MERGE_MESSAGE_1,
         metadata={"committer": "airflow-operator"}
     )
 
+    # Fetch and verify log messages in bulk.
+    task_check_logs_bulk = PythonOperator(
+        task_id='check_logs_bulk',
+        python_callable=check_logs,
+        op_kwargs={
+            'repo': default_args.get('repo'),
+            'ref': '''{{ task_instance.xcom_pull(task_ids='merge_branches', key='return_value') }}''',
+            'msgs': [MERGE_MESSAGE_1, COMMIT_MESSAGE_1],
+        })
+
+    # Fetch and verify log messages one at a time.
+    task_check_logs_individually = PythonOperator(
+        task_id='check_logs_individually',
+        python_callable=check_logs,
+        op_kwargs= {
+            'repo': default_args.get('repo'),
+            'ref': '''{{ task_instance.xcom_pull(task_ids='merge_branches', key='return_value') }}''',
+            'amount': 1,
+            'msgs': [MERGE_MESSAGE_1, COMMIT_MESSAGE_1],
+        })
+
     task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit]
     task_create_file >> task_sense_file >> task_commit
-    task_sense_commit >> task_merge
+    task_sense_commit >> task_merge >> [task_check_logs_bulk, task_check_logs_individually]
 
 
 sample_workflow_dag = lakeFS_workflow()
