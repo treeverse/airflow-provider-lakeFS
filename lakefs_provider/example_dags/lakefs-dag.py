@@ -51,7 +51,7 @@ class NamedStringIO(StringIO):
         self.name = name
 
 
-@dag(default_args=default_args, start_date=days_ago(2), schedule_interval=None, tags=['example'])
+@dag(default_args=default_args, max_active_runs=1, start_date=days_ago(2), schedule_interval=None, tags=['example'])
 def lakeFS_workflow():
     """
     ### Example lakeFS DAG
