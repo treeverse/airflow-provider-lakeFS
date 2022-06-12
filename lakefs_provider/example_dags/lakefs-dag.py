@@ -49,7 +49,7 @@ def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messa
             # Matched all msgs!
             return
         if expected != actual:
-            raise AirflowFailException(f'Got message {commit} instead of expected message {actual}')
+            raise AirflowFailException(f'Got {actual} instead of {expected}')
 
 
 class NamedStringIO(StringIO):
@@ -135,7 +135,7 @@ def lakeFS_workflow():
 
     expectedCommits = ['''{{ ti.xcom_pull('merge_branches') }}''',
                        '''{{ ti.xcom_pull('commit') }}''']
-    expectedMessages = [COMMIT_MESSAGE_1, MERGE_MESSAGE_1]
+    expectedMessages = [MERGE_MESSAGE_1, COMMIT_MESSAGE_1]
 
     # Fetch and verify log messages in bulk.
     task_check_logs_bulk = PythonOperator(
