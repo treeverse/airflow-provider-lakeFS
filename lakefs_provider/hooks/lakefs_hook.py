@@ -1,4 +1,5 @@
-from typing import Dict, Any, IO
+from typing import Any, Dict, IO
+from collections.abc import Iterator
 
 import lakefs_client
 from lakefs_client import models
@@ -8,6 +9,18 @@ from lakefs_client.models import Merge
 
 from airflow.exceptions import AirflowException
 from airflow.hooks.base import BaseHook
+
+
+def _commitAsDict(details):
+    return {
+        "id": details.id,
+        "parents": details.parents,
+        "committer": details.committer,
+        "message": details.message,
+        "creation_date": details.creation_date,
+        "meta_range_id": details.meta_range_id,
+        "metadata": details.metadata,
+    }
 
 
 class LakeFSHook(BaseHook):
@@ -88,15 +101,23 @@ class LakeFSHook(BaseHook):
         # Actually ask for a log of length 1, because of treeverse/lakeFS#3436.
         response = client.refs.log_commits(repo, ref, amount=1)
         details = response.results[0]
-        return {
-            "id": details.id,
-            "parents": details.parents,
-            "committer": details.committer,
-            "message": details.message,
-            "creation_date": details.creation_date,
-            "meta_range_id": details.meta_range_id,
-            "metadata": details.metadata,
-        }
+        return _commitAsDict(details)
+
+    def log_commits(self, repo: str, ref: str, size: int=100) -> Iterator[Any]:
+        """Yield commits of repo backwards from ref.
+
+        Fetch size commits at a time."""
+        client = self.get_conn()
+        log_commits = client.refs.log_commits
+        after = ''
+        while True:
+            response = log_commits(repo, ref, amount=size, after=after)
+            for details in response.results:
+                yield _commitAsDict(details)
+            if response.pagination == None or not response.pagination.has_more:
+                return
+            after = response.pagination.next_offset
+            
 
     def stat_object(self, repo: str, ref: str, path: str) -> ObjectStats:
         client = self.get_conn()
