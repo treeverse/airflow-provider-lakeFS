@@ -1,6 +1,7 @@
 from typing import Dict
 from collections.abc import Sequence
 
+from collections import namedtuple
 from itertools import zip_longest
 
 from io import StringIO
@@ -35,14 +36,20 @@ COMMIT_MESSAGE_1 = 'committing to lakeFS using airflow!'
 MERGE_MESSAGE_1 = 'merging to the default branch'
 
 
-def check_logs(task_instance, repo: str, ref: str, msgs: Sequence[str], amount: int=100) -> None:
+IdAndMessage = namedtuple('IdAndMessage', ['id', 'message'])
+
+
+def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messages: Sequence[str], amount: int=100) -> None:
     hook = LakeFSHook(default_args['lakefs_conn_id'])
-    for (msg, commit) in zip_longest(msgs, hook.log_commits(repo, ref, amount)):
-        if msg is None:
+    expected = [ IdAndMessage(commit, message) for commit, message in zip(commits, messages) ]
+    actuals = (IdAndMessage(message=commit['message'], id=commit['id'])
+               for commit in hook.log_commits(repo, ref, amount))
+    for (expected, actual) in zip_longest(expected, actuals):
+        if expected is None:
             # Matched all msgs!
             return
-        if msg != commit['message']:
-            raise AirflowFailException(f'Got message {commit["message"]} instead of expected message {msg}')
+        if expected != actual:
+            raise AirflowFailException(f'Got message {commit} instead of expected message {actual}')
 
 
 class NamedStringIO(StringIO):
@@ -51,7 +58,12 @@ class NamedStringIO(StringIO):
         self.name = name
 
 
-@dag(default_args=default_args, max_active_runs=1, start_date=days_ago(2), schedule_interval=None, tags=['example'])
+@dag(default_args=default_args,
+     render_template_as_native_obj=True,
+     max_active_runs=1,
+     start_date=days_ago(2),
+     schedule_interval=None,
+     tags=['testing'])
 def lakeFS_workflow():
     """
     ### Example lakeFS DAG
@@ -88,6 +100,8 @@ def lakeFS_workflow():
         task_id='sense_file',
         path='path/to/_SUCCESS',
         mode='reschedule',
+        poke_interval=1,
+        timeout=10,
     )
 
     # Commit the changes to the branch.
@@ -105,6 +119,8 @@ def lakeFS_workflow():
         task_id='sense_commit',
         prev_commit_id='''{{ task_instance.xcom_pull(task_ids='get_branch_commit', key='return_value').id }}''',
         mode='reschedule',
+        poke_interval=1,
+        timeout=10,
     )
 
     # Merge the changes back to the main branch.
@@ -117,6 +133,10 @@ def lakeFS_workflow():
         metadata={"committer": "airflow-operator"}
     )
 
+    expectedCommits = ['''{{ ti.xcom_pull('merge_branches') }}''',
+                       '''{{ ti.xcom_pull('commit') }}''']
+    expectedMessages = [COMMIT_MESSAGE_1, MERGE_MESSAGE_1]
+
     # Fetch and verify log messages in bulk.
     task_check_logs_bulk = PythonOperator(
         task_id='check_logs_bulk',
@@ -124,7 +144,8 @@ def lakeFS_workflow():
         op_kwargs={
             'repo': default_args.get('repo'),
             'ref': '''{{ task_instance.xcom_pull(task_ids='merge_branches', key='return_value') }}''',
-            'msgs': [MERGE_MESSAGE_1, COMMIT_MESSAGE_1],
+            'commits': expectedCommits,
+            'messages': expectedMessages,
         })
 
     # Fetch and verify log messages one at a time.
@@ -135,7 +156,8 @@ def lakeFS_workflow():
             'repo': default_args.get('repo'),
             'ref': '''{{ task_instance.xcom_pull(task_ids='merge_branches', key='return_value') }}''',
             'amount': 1,
-            'msgs': [MERGE_MESSAGE_1, COMMIT_MESSAGE_1],
+            'commits': expectedCommits,
+            'messages': expectedMessages,
         })
 
     task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit]
