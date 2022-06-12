@@ -38,7 +38,7 @@ jobs:
           cp ./lakefs_provider/example_dags/lakefs-dag.py astro/dags/
 
       - name: Insert Dockerfile pip install
-        run: printf "\nRUN pip install --user dist/airflow_provider_lakefs-0.42.0-py3-none-any.whl" >> astro/Dockerfile
+        run: printf "\nRUN pip install --user dist/airflow_provider_lakefs-*-py3-none-any.whl" >> astro/Dockerfile
 
       - name: Start astro
         run: |

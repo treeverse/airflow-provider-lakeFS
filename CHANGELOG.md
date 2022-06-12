@@ -1,3 +1,8 @@
+# 0.43.0
+
+* Added hooks:
+  - LakeFSHook.logCommits
+
 # 0.42.0
 
 * Added operators:
