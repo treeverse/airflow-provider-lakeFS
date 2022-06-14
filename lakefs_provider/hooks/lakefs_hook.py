@@ -1,5 +1,4 @@
-from typing import Any, Dict, IO
-from collections.abc import Iterator
+from typing import Any, Dict, IO, Iterator
 
 import lakefs_client
 from lakefs_client import models
@@ -103,7 +102,7 @@ class LakeFSHook(BaseHook):
         details = response.results[0]
         return _commitAsDict(details)
 
-    def log_commits(self, repo: str, ref: str, size: int=100) -> Iterator[Any]:
+    def log_commits(self, repo: str, ref: str, size: int=100) -> Iterator:
         """Yield commits of repo backwards from ref.
 
         Fetch size commits at a time."""
