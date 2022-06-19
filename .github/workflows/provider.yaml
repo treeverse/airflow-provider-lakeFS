@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        astro-version: ['0.28.1', '0.29.0', '1.0.2', '1.1.0']
+        airflow-version: ['2.1.4', '2.2.5', '2.3.2']
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -28,10 +28,10 @@ jobs:
           python3 -m build
 
       - name: Install astro
-        run: curl -sSL https://install.astronomer.io | sudo bash -s -- v${{ matrix.astro-version }}
+        run: curl -sSL https://install.astronomer.io | sudo bash -s
 
       - name: Create astro dev env
-        run: mkdir astro && cd astro && astro dev init
+        run: mkdir astro && cd astro && astro dev init -a ${{ matrix.airflow-version }}
 
       - name: Copy files
         run: |
