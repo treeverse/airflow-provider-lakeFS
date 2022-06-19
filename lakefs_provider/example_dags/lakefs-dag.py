@@ -16,6 +16,7 @@ from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
 from lakefs_provider.operators.upload_operator import LakeFSUploadOperator
 from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
 from lakefs_provider.operators.get_commit_operator import LakeFSGetCommitOperator
+from lakefs_provider.operators.get_object_operator import LakeFSGetObjectOperator
 from lakefs_provider.sensors.file_sensor import LakeFSFileSensor
 from lakefs_provider.sensors.commit_sensor import LakeFSCommitSensor
 from airflow.operators.python import PythonOperator
@@ -27,16 +28,23 @@ default_args = {
     "owner": "lakeFS",
     "branch": "example-branch",
     "repo": "example-repo",
+    "path": "path/to/_SUCCESS",
     "default-branch": "main",
     "lakefs_conn_id": "conn_lakefs"
 }
 
 
+CONTENT = 'It is not enough to succeed.  Others must fail.'
 COMMIT_MESSAGE_1 = 'committing to lakeFS using airflow!'
 MERGE_MESSAGE_1 = 'merging to the default branch'
 
 
 IdAndMessage = namedtuple('IdAndMessage', ['id', 'message'])
+
+
+def check_equality(task_instance, actual: str, expected: str) -> None:
+    if actual != expected:
+        raise AirflowFailException(f'Got {actual} instead of {expected}')
 
 
 def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messages: Sequence[str], amount: int=100) -> None:
@@ -86,8 +94,7 @@ def lakeFS_workflow():
     # Create a path.
     task_create_file = LakeFSUploadOperator(
         task_id='upload_file',
-        path="path/to/_SUCCESS",
-        content=NamedStringIO(content='It is not enough to succeed.  Others must fail.', name='content'))
+        content=NamedStringIO(content=CONTENT, name='content'))
 
     task_get_branch_commit = LakeFSGetCommitOperator(
         do_xcom_push=True,
@@ -98,7 +105,6 @@ def lakeFS_workflow():
     # DAG continues only when the file exists.
     task_sense_file = LakeFSFileSensor(
         task_id='sense_file',
-        path='path/to/_SUCCESS',
         mode='reschedule',
         poke_interval=1,
         timeout=10,
@@ -122,6 +128,21 @@ def lakeFS_workflow():
         poke_interval=1,
         timeout=10,
     )
+
+    # Get the file.
+    task_get_file = LakeFSGetObjectOperator(
+        task_id='get_object',
+        do_xcom_push=True,
+        ref=default_args['branch'])
+
+    # Check its contents
+    task_check_contents = PythonOperator(
+        task_id='check_equality',
+        python_callable=check_equality,
+        op_kwargs={
+            'actual': '''{{ task_instance.xcom_pull(task_ids='get_object', key='return_value') }}''',
+            'expected': CONTENT,
+        })        
 
     # Merge the changes back to the main branch.
     task_merge = LakeFSMergeOperator(
@@ -161,7 +182,7 @@ def lakeFS_workflow():
         })
 
     task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit]
-    task_create_file >> task_sense_file >> task_commit
+    task_create_file >> task_sense_file >> task_commit >> task_get_file >> task_check_contents
     task_sense_commit >> task_merge >> [task_check_logs_bulk, task_check_logs_individually]
 
 
