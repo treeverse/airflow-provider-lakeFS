@@ -9,12 +9,24 @@ jobs:
   build-provider:
     name: build latest provider
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', '3.10']
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: DEBUG Python version
+        run: |
+          python3 --version
 
       - name: Install requirements
         run: pip install -r requirements.txt
