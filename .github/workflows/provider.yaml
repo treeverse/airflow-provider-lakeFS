@@ -11,22 +11,13 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        astro-version: ['0.25.5', '0.26.2', '0.27.4', '0.28.1', '0.29.0', '1.0.2', '1.1.0']
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: DEBUG Python version
-        run: |
-          python3 --version
 
       - name: Install requirements
         run: pip install -r requirements.txt
@@ -37,9 +28,7 @@ jobs:
           python3 -m build
 
       - name: Install astro
-        env:
-          TAG: 0.28.1
-        run: curl -sSL https://install.astronomer.io | sudo bash -s
+        run: curl -sSL https://install.astronomer.io | sudo bash -s -- v${{ matrix.astro-version }}
 
       - name: Create astro dev env
         run: mkdir astro && cd astro && astro dev init
