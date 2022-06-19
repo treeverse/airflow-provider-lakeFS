@@ -181,8 +181,9 @@ def lakeFS_workflow():
             'messages': expectedMessages,
         })
 
-    task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit]
-    task_create_file >> task_sense_file >> task_commit >> task_get_file >> task_check_contents
+    task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit, task_sense_file]
+    task_create_file >> task_commit
+    task_sense_file >> task_get_file >> task_check_contents
     task_sense_commit >> task_merge >> [task_check_logs_bulk, task_check_logs_individually]
 
 
