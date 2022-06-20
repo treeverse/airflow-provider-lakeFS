@@ -116,8 +116,11 @@ class LakeFSHook(BaseHook):
             if response.pagination == None or not response.pagination.has_more:
                 return
             after = response.pagination.next_offset
-            
 
     def stat_object(self, repo: str, ref: str, path: str) -> ObjectStats:
         client = self.get_conn()
         return client.objects.stat_object(repository=repo, ref=ref, path=path)
+
+    def get_object(self, repo: str, ref: str, path: str) -> IO:
+        client = self.get_conn()
+        return client.objects.get_object(repository=repo, ref=ref, path=path)
