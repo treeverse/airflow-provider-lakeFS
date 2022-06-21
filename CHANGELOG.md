@@ -1,3 +1,8 @@
+# 0.44.0
+
+* Added operators:
+  - LakeFSGetObjectOperator (Airflow limitation: small objects only)
+
 # 0.43.1
 
 * Fix typing for Python 3.7 and above
