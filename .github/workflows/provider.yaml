@@ -9,6 +9,9 @@ jobs:
   build-provider:
     name: build latest provider
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        airflow-version: ['2.1.4', '2.2.5', '2.3.2']
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -25,12 +28,10 @@ jobs:
           python3 -m build
 
       - name: Install astro
-        env:
-          TAG: 0.28.1
         run: curl -sSL https://install.astronomer.io | sudo bash -s
 
       - name: Create astro dev env
-        run: mkdir astro && cd astro && astro dev init
+        run: mkdir astro && cd astro && astro dev init -a ${{ matrix.airflow-version }}
 
       - name: Copy files
         run: |
