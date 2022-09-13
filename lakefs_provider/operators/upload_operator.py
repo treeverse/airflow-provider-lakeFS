@@ -39,7 +39,6 @@ class LakeFSUploadOperator(BaseOperator):
         self.branch = branch
         self.path = path
         self.content = content
-        self.task_id = kwargs.get("task_id")
 
     def execute(self, context: Dict[str, Any]) -> Any:
         hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)
