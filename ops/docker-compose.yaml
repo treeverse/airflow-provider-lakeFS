@@ -9,7 +9,8 @@ services:
       - "postgres"
     environment:
       - LAKEFS_AUTH_ENCRYPT_SECRET_KEY="some random secret string"
-      - LAKEFS_DATABASE_CONNECTION_STRING=postgres://lakefs:lakefs@postgres/postgres?sslmode=disable
+      - LAKEFS_DATABASE_TYPE=postgres
+      - LAKEFS_DATABASE_POSTGRES_CONNECTION_STRING=postgres://lakefs:lakefs@postgres/postgres?sslmode=disable
       - LAKEFS_BLOCKSTORE_TYPE=local
       - LAKEFS_GATEWAYS_S3_DOMAIN_NAME=s3.local.lakefs.io:8000
       - LAKEFS_LOGGING_LEVEL=TRACE
