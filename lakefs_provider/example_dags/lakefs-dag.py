@@ -1,5 +1,4 @@
-from typing import Dict
-from collections.abc import Sequence
+from typing import Dict, Sequence
 
 from collections import namedtuple
 from itertools import zip_longest
