@@ -17,6 +17,8 @@ class LakeFSCreateSymlinkOperator(BaseOperator):
     :type repo: str
     :param branch: The lakeFS branch name
     :type branch: str
+    :param location: Location where symlink will be created (optional)
+    :type location: str
     """
 
     # Specify the arguments that are allowed to parse with jinja templating
@@ -29,7 +31,12 @@ class LakeFSCreateSymlinkOperator(BaseOperator):
 
     @apply_defaults
     def __init__(
-        self, lakefs_conn_id: str, repo: str, branch: str, **kwargs: Any
+        self,
+        lakefs_conn_id: str,
+        repo: str,
+        branch: str,
+        location: str = None,
+        **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
         self.lakefs_conn_id = lakefs_conn_id
@@ -42,6 +49,12 @@ class LakeFSCreateSymlinkOperator(BaseOperator):
         self.log.info(
             "Create symlink file for branch '%s' in repo '%s'", self.branch, self.repo
         )
-        location = hook.create_symlink_file(self.repo, self.branch)
+
+        api_kwargs = {}
+        if location:
+            self.log.info("Create symlink in location '%s'", location)
+            api_kwargs["location"] = location
+
+        location = hook.create_symlink_file(self.repo, self.branch, **api_kwargs)
 
         return location
