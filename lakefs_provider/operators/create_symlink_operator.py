@@ -1,6 +1,5 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict
 
-from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
@@ -25,6 +24,7 @@ class LakeFSCreateSymlinkOperator(BaseOperator):
     template_fields = [
         "repo",
         "branch",
+        "location",
     ]
     template_ext = ()
     ui_color = "#f4a460"
@@ -42,6 +42,7 @@ class LakeFSCreateSymlinkOperator(BaseOperator):
         self.lakefs_conn_id = lakefs_conn_id
         self.repo = repo
         self.branch = branch
+        self.location = location
 
     def execute(self, context: Dict[str, Any]) -> Any:
         hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)
@@ -49,12 +50,7 @@ class LakeFSCreateSymlinkOperator(BaseOperator):
         self.log.info(
             "Create symlink file for branch '%s' in repo '%s'", self.branch, self.repo
         )
+        if self.location:
+            self.log.info("Use location '%s'", self.location)
 
-        api_kwargs = {}
-        if location:
-            self.log.info("Create symlink in location '%s'", location)
-            api_kwargs["location"] = location
-
-        location = hook.create_symlink_file(self.repo, self.branch, **api_kwargs)
-
-        return location
+        return hook.create_symlink_file(self.repo, self.branch, self.location)
