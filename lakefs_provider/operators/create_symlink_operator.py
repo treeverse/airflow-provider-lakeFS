@@ -8,7 +8,7 @@ from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 
 class LakeFSCreateSymlinkOperator(BaseOperator):
     """
-    Create a symlnik file
+    Create a symlink file
 
     :param lakefs_conn_id: connection to run the operator with
     :type lakefs_conn_id: str
