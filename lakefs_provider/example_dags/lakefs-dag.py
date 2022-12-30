@@ -12,6 +12,7 @@ from airflow.exceptions import AirflowFailException
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchOperator
+from lakefs_provider.operators.create_symlink_operator import LakeFSCreateSymlinkOperator
 from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
 from lakefs_provider.operators.upload_operator import LakeFSUploadOperator
 from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
@@ -118,6 +119,9 @@ def lakeFS_workflow():
         metadata={"committed_from": "airflow-operator"}
     )
 
+    # Create symlink file for example-branch
+    task_create_symlink = LakeFSCreateSymlinkOperator(task_id="create_symlink")
+
     # Wait until the commit is completed.
     # Not really necessary in this DAG, since the LakeFSCommitOperator won't return before that.
     # Nonetheless we added it to show the full capabilities.
@@ -142,7 +146,7 @@ def lakeFS_workflow():
         op_kwargs={
             'actual': '''{{ task_instance.xcom_pull(task_ids='get_object', key='return_value') }}''',
             'expected': CONTENT,
-        })        
+        })
 
     # Merge the changes back to the main branch.
     task_merge = LakeFSMergeOperator(
@@ -181,8 +185,9 @@ def lakeFS_workflow():
             'messages': expectedMessages,
         })
 
+
     task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit, task_sense_file]
-    task_create_file >> task_commit
+    task_create_file >> task_commit >> task_create_symlink
     task_sense_file >> task_get_file >> task_check_contents
     task_sense_commit >> task_merge >> [task_check_logs_bulk, task_check_logs_individually]
 
