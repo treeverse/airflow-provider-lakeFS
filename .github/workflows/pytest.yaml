@@ -1,0 +1,22 @@
+name: Python unit tests
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  pytest:
+    name: Run python unit test
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install requirements
+        run: |
+          pip install -r requirements.txt
+          pip install pytest==7.2.0
+
+      - name: Run tests
+        run: pytest tests/
