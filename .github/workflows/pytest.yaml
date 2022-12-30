@@ -16,7 +16,7 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r requirements.txt
-          pip install pytest==7.2.0
+          pip install pytest==7.2.0 apache-airflow==2.5.0
 
       - name: Run tests
         run: pytest tests/
