@@ -81,7 +81,7 @@ jobs:
         with:
           timeout_minutes: 3
           max_attempts: 30
-          command: docker-compose -f ops/docker-compose.yaml exec lakefs ls lakefs/data/block/data/symlinks/example-repo/example-branch/path/to/symlink.txt
+          command: docker-compose -f ops/docker-compose.yaml exec -T lakefs ls lakefs/data/block/data/symlinks/example-repo/example-branch/path/to/symlink.txt
 
       - name: lakeFS logs
         if: ${{ always() }}
