@@ -5,22 +5,20 @@ services:
     image: "treeverse/lakefs:latest"
     ports:
       - "8000:8000"
-    depends_on:
-      - "postgres"
     environment:
       - LAKEFS_AUTH_ENCRYPT_SECRET_KEY="some random secret string"
-      - LAKEFS_DATABASE_TYPE=postgres
-      - LAKEFS_DATABASE_POSTGRES_CONNECTION_STRING=postgres://lakefs:lakefs@postgres/postgres?sslmode=disable
+      - LAKEFS_DATABASE_TYPE=local
       - LAKEFS_BLOCKSTORE_TYPE=local
       - LAKEFS_GATEWAYS_S3_DOMAIN_NAME=s3.local.lakefs.io:8000
       - LAKEFS_LOGGING_LEVEL=TRACE
       - LAKEFS_STATS_ENABLED=false
-    entrypoint: ["/app/wait-for", "postgres:5432", "--", "/app/lakefs", "run"]
-  postgres:
-    image: "postgres:11"
-    command: "-c log_min_messages=FATAL"
-    environment:
-      POSTGRES_USER: lakefs
-      POSTGRES_PASSWORD: lakefs
-    logging:
-      driver: none
+      - LAKECTL_SERVER_ENDPOINT_URL=http://localhost:8000
+      - LAKECTL_CREDENTIALS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+      - LAKECTL_CREDENTIALS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+        - |
+          lakefs setup --local-settings --user-name docker --access-key-id AKIAIOSFODNN7EXAMPLE --secret-access-key wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY || true
+          lakefs run --local-settings &
+          wait-for -t 60 lakefs:8000 -- lakectl repo create lakefs://example s3://example || true
+          wait
