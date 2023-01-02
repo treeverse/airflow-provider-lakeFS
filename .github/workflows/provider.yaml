@@ -8,7 +8,7 @@ on:
 jobs:
   build-provider:
     name: build latest provider
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -73,6 +73,15 @@ jobs:
           timeout_minutes: 3
           max_attempts: 30
           command: AWS_ACCESS_KEY_ID=${{ env.KEY }} AWS_SECRET_ACCESS_KEY=${{ env.SECRET }} aws s3 cp --endpoint-url=http://s3.local.lakefs.io:8000 s3://example-repo/main/path/to/_SUCCESS -
+
+      - name: Wait symlink file creation and validate it
+        env:
+          AWS_EC2_METADATA_DISABLED: true
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 3
+          max_attempts: 30
+          command: docker-compose -f ops/docker-compose.yaml exec -T lakefs ls lakefs/data/block/data/symlinks/example-repo/example-branch/path/to/symlink.txt
 
       - name: lakeFS logs
         if: ${{ always() }}

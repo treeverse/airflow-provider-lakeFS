@@ -124,3 +124,12 @@ class LakeFSHook(BaseHook):
     def get_object(self, repo: str, ref: str, path: str) -> IO:
         client = self.get_conn()
         return client.objects.get_object(repository=repo, ref=ref, path=path)
+
+    def create_symlink_file(self, repo: str, branch: str, location: str = None)  -> str:
+        client = self.get_conn()
+
+        kwargs = {}
+        if location:
+            kwargs["location"] = location
+
+        return client.metadata.create_symlink_file(repository=repo, branch=branch, **kwargs)["location"]
