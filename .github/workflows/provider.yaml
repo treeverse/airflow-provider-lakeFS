@@ -8,7 +8,7 @@ on:
 jobs:
   build-provider:
     name: build latest provider
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
