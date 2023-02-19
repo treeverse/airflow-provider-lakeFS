@@ -1,22 +1,34 @@
 from datetime import datetime, date
-from airflow.models.dagrun import DagRun
 import time
+import requests
+
+def get_latest_state():
+    url = "http://localhost:8080/api/v1/dags/lakeFS_workflow/dagRuns"
+    payload = {}
+    headers = {}
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    dag_details = {}
+    for key in response.json()['dag_runs']:
+        dag_details[key['execution_date']] = key['state']
+
+    # Creates a sorted dictionary (sorted by key)
+    from collections import OrderedDict
+
+    dict1 = OrderedDict(sorted(dag_details.items(), reverse=True))
+    state = dict1[list(dict1.keys())[0]]
+    return state
 
 def dag_state():
     print("Inside the dag state block")
-    dag_id = 'lakeFS_workflow'
-    dag_runs = DagRun.find(dag_id=dag_id)
-    dag_runs.sort(key=lambda x: datetime.strptime(str(x.execution_date).split(".")[0], '%Y-%m-%d %H:%M:%S'),
-                  reverse=True)
-    print(dag_runs[0].execution_date,dag_runs[0].state)
-    while ((dag_runs[0].state != 'success') and (dag_runs[0].state != 'failed') and (dag_runs[0].state != 'skipped')):
+
+    state=get_latest_state()
+    while ((state != 'success') and (state != 'failed') and (state != 'skipped')):
         time.sleep(5)
-        dag_runs = DagRun.find(dag_id=dag_id)
-        dag_runs.sort(key=lambda x: datetime.strptime(str(x.execution_date).split(".")[0], '%Y-%m-%d %H:%M:%S'),reverse=True)
-        print("Dag details for LakeFS  workflow",dag_runs[0].execution_date,dag_runs[0].state)
+        state=get_latest_state()
+        print("Dag details for LakeFS  workflow",state)
         continue
-    print(dag_runs[0].state)
-    if  dag_runs[0].state=='success':
+    if  state=='success':
             return 0
     else:
             return 1
