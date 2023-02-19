@@ -4,12 +4,13 @@ import requests
 
 def get_latest_state():
     url = "http://localhost:8080/api/v1/dags/lakeFS_workflow/dagRuns"
-    payload = {}
-    headers = {
-        'Authorization': 'Basic YWlyZmxvdzphaXJmbG93'
-    }
-
-    response = requests.request("GET", url, headers=headers, data=payload)
+    # payload = {}
+    # headers = {
+    #     'Authorization': 'Basic YWlyZmxvdzphaXJmbG93dsd'
+    # }
+    username="admin"
+    password="admin"
+    response = requests.get( url,  auth=(username, password))
     dag_details = {}
     for key in response.json()['dag_runs']:
         dag_details[key['execution_date']] = key['state']
@@ -35,5 +36,5 @@ def dag_state():
     else:
             return 1
 
-dag_state()
+print(dag_state())
 
