@@ -5,7 +5,9 @@ import requests
 def get_latest_state():
     url = "http://localhost:8080/api/v1/dags/lakeFS_workflow/dagRuns"
     payload = {}
-    headers = {}
+    headers = {
+        'Authorization': 'Basic YWlyZmxvdzphaXJmbG93'
+    }
 
     response = requests.request("GET", url, headers=headers, data=payload)
     dag_details = {}
