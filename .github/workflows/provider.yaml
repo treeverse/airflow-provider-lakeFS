@@ -64,6 +64,15 @@ jobs:
           astro dev run dags trigger lakeFS_workflow
           sleep 30
 
+      - name : Run DAG state check script
+        id : dag_status_id
+        run: |
+            python3 dag_status.py
+
+      - name : Check failed DAG satus
+        if: steps.dag_status_id.outputs.status !=0
+        run :  exit 1
+
       - name: Wait until Airflow makes output file available on main
         env:
           # To avoid the lack of region - see https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
