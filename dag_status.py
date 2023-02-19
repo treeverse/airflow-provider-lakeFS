@@ -13,7 +13,7 @@ def dag_state():
         time.sleep(5)
         dag_runs = DagRun.find(dag_id=dag_id)
         dag_runs.sort(key=lambda x: datetime.strptime(str(x.execution_date).split(".")[0], '%Y-%m-%d %H:%M:%S'),reverse=True)
-        print("Dag details for LakeFS workflow",dag_runs[0].execution_date,dag_runs[0].state)
+        print("Dag details for LakeFS  workflow",dag_runs[0].execution_date,dag_runs[0].state)
         continue
     print(dag_runs[0].state)
     if  dag_runs[0].state=='success':
