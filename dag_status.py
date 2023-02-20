@@ -1,13 +1,8 @@
-from datetime import datetime, date
 import time
 import requests
 
 def get_latest_state():
     url = "http://localhost:8080/api/v1/dags/lakeFS_workflow/dagRuns"
-    # payload = {}
-    # headers = {
-    #     'Authorization': 'Basic YWlyZmxvdzphaXJmbG93dsd'
-    # }
     username="admin"
     password="admin"
     response = requests.get( url,  auth=(username, password))
@@ -26,8 +21,11 @@ def dag_state():
     print("Inside the dag state block")
 
     state=get_latest_state()
+    timeout = time.time() + 60 * 5  # 5 minutes from now
     while ((state != 'success') and (state != 'failed') and (state != 'skipped')):
         time.sleep(5)
+        if time.time() > timeout:
+            return 1
         state=get_latest_state()
         print("Dag details for LakeFS  workflow",state)
         continue
