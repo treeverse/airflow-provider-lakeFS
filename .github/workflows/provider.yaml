@@ -67,11 +67,8 @@ jobs:
       - name : Run DAG state check script
         id : dag_status_id
         run: |
+            chmod +x dag_status.py
             python3 dag_status.py
-
-      - name : Check failed DAG satus
-        if: steps.dag_status_id.outputs.status !=0
-        run :  exit 1
 
       - name: Wait until Airflow makes output file available on main
         env:

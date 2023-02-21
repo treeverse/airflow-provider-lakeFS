@@ -1,38 +1,37 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
 import time
 import requests
 
+
 def get_latest_state():
-    url = "http://localhost:8080/api/v1/dags/lakeFS_workflow/dagRuns"
-    username="admin"
-    password="admin"
-    response = requests.get( url,  auth=(username, password))
+    url = 'http://localhost:8080/api/v1/dags/lakeFS_workflow/dagRuns'
+    username = 'admin'
+    password = 'admin'
+    response = requests.get(url, auth=(username, password))
     dag_details = {}
-    for key in response.json()['dag_runs']:
-        dag_details[key['execution_date']] = key['state']
-
-    # Creates a sorted dictionary (sorted by key)
-    from collections import OrderedDict
-
-    dict1 = OrderedDict(sorted(dag_details.items(), reverse=True))
-    state = dict1[list(dict1.keys())[0]]
+    latest = max(response.json()['dag_runs'], key=lambda k: \
+                 k['execution_date'])
+    state = latest['state']
     return state
 
-def dag_state():
-    print("Inside the dag state block")
 
-    state=get_latest_state()
+def dag_state():
+    state = get_latest_state()
     timeout = time.time() + 60 * 5  # 5 minutes from now
-    while ((state != 'success') and (state != 'failed') and (state != 'skipped')):
+    while state != 'success' and state != 'failed' and state \
+        != 'skipped':
         time.sleep(5)
         if time.time() > timeout:
             return 1
-        state=get_latest_state()
-        print("Dag details for LakeFS  workflow",state)
+        state = get_latest_state()
         continue
-    if  state=='success':
-            return 0
+    if state == 'success':
+        return 0
     else:
-            return 1
+        return 1
 
-print(dag_state())
 
+sys.exit(dag_state())
