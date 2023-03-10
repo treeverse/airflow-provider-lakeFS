@@ -147,9 +147,22 @@ class LakeFSHook(BaseHook):
 
     def test_connection(self):
         "TO do"
-        """Test HTTP Connection"""
+        """Test  Connection"""
         try:
-            client = self.get_conn()
-            return True, "Connection successfully tested"
+            # client = self.get_conn()
+            conn = self.get_connection(self.lakefs_conn_id)
+            import requests
+            import json
+            url = conn.host+"/api/v1/auth/login"
+            payload = json.dumps({
+                "access_key_id": conn.extra_dejson.get("access_key_id", None),
+                "secret_access_key": conn.extra_dejson.get("secret_access_key", None)
+            })
+            headers = {'Content-Type': 'application/json'}
+            response = requests.request("POST", url, headers=headers, data=payload)
+            if response.status_code == 200:
+                return True, "Connection successfully tested"
+            else:
+                return False, "Connection Failed, Unauthorized"
         except Exception as e:
             return False, str(e)
