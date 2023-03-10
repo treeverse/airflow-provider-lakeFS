@@ -58,7 +58,7 @@ class LakeFSHook(BaseHook):
     def get_ui_field_behaviour() -> dict[str, Any]:
         """Returns custom field behaviour"""
         return {
-            "hidden_fields": ["login", "schema", "password", "description"],
+            "hidden_fields": ["login", "schema", "password", "description","port"],
             "relabeling": {},
             "placeholders": {},
         }
