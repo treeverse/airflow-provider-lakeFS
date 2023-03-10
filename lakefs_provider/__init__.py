@@ -4,15 +4,11 @@ def get_provider_info():
         "package-name": "airflow-provider-lakefs",
         "name": "lakeFS Airflow Provider",
         "description": "An Airflow provider of lakeFS",
-        "hook-class-names": ["lakefs_provider.hooks.lakefs_hook.LakeFSHook","lakefs_provider.hooks.custom_connection_hook.LakeFSFormHook"],
+        "hook-class-names": ["lakefs_provider.hooks.lakefs_hook.LakeFSHook"],
         "connection-types": [{
-            'connection-type': 'lakefs',
+            'connection-type': 'LakeFS',
             'hook-class-name': 'lakefs_provider.hooks.lakefs_hook.LakeFSHook',
-        },
-            {
-                'connection-type': 'lakefs_form',
-                'hook-class-name': 'lakefs_provider.hooks.custom_connection_hook.LakeFSFormHook',
-            }
+        }
         ],
 
         "extra-links": ["lakefs_provider.operators.create_branch_operator.ExtraLink"],

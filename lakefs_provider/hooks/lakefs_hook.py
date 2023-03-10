@@ -30,6 +30,10 @@ class LakeFSHook(BaseHook):
         access_key_id, secret_access_key and lakeFS server endpoint.
     :type lakefs_conn_id: str
     """
+    conn_name_attr = "lakefs_conn_id"
+    default_conn_name = "lakefs_conn_id"
+    conn_type = "LakeFS"
+    hook_name = "LakeFS"
 
     def __init__(self, lakefs_conn_id: str) -> None:
         super().__init__()
@@ -37,12 +41,10 @@ class LakeFSHook(BaseHook):
 
     def get_conn(self) -> LakeFSClient:
         conn = self.get_connection(self.lakefs_conn_id)
-
         configuration = lakefs_client.Configuration()
         configuration.username = conn.extra_dejson.get("access_key_id", None)
         configuration.password = conn.extra_dejson.get("secret_access_key", None)
         configuration.host = conn.host
-
         if not configuration.username:
             raise AirflowException("access_key_id must be specified in the lakeFS connection details")
         if not configuration.password:
@@ -51,6 +53,15 @@ class LakeFSHook(BaseHook):
             raise AirflowException("lakeFS endpoint must be specified in the lakeFS connection details")
 
         return LakeFSClient(configuration)
+
+    @staticmethod
+    def get_ui_field_behaviour() -> dict[str, Any]:
+        """Returns custom field behaviour"""
+        return {
+            "hidden_fields": ["login", "schema", "password", "description"],
+            "relabeling": {},
+            "placeholders": {},
+        }
 
     def create_branch(self, repository: str, name: str, source_branch: str = 'main') -> str:
         client = self.get_conn()
@@ -133,3 +144,12 @@ class LakeFSHook(BaseHook):
             kwargs["location"] = location
 
         return client.metadata.create_symlink_file(repository=repo, branch=branch, **kwargs)["location"]
+
+    def test_connection(self):
+        "TO do"
+        """Test HTTP Connection"""
+        try:
+            client = self.get_conn()
+            return True, "Connection successfully tested"
+        except Exception as e:
+            return False, str(e)
