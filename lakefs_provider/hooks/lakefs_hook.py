@@ -147,7 +147,6 @@ class LakeFSHook(BaseHook):
 
     def test_connection(self):
         """Test  Connection"""
-        # client = self.get_conn()
         conn = self.get_connection(self.lakefs_conn_id)
         import requests
         import json
