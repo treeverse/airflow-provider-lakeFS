@@ -32,8 +32,8 @@ class LakeFSHook(BaseHook):
     """
     conn_name_attr = "lakefs_conn_id"
     default_conn_name = "lakefs_conn_id"
-    conn_type = "LakeFS"
-    hook_name = "LakeFS"
+    conn_type = "lakefs"
+    hook_name = "lakefs"
 
     def __init__(self, lakefs_conn_id: str) -> None:
         super().__init__()
@@ -146,23 +146,24 @@ class LakeFSHook(BaseHook):
         return client.metadata.create_symlink_file(repository=repo, branch=branch, **kwargs)["location"]
 
     def test_connection(self):
-        "TO do"
         """Test  Connection"""
+        # client = self.get_conn()
+        conn = self.get_connection(self.lakefs_conn_id)
+        import requests
+        import json
+        url = conn.host+"/api/v1/auth/login"
+        payload = json.dumps({
+            "access_key_id": conn.extra_dejson.get("access_key_id", None),
+            "secret_access_key": conn.extra_dejson.get("secret_access_key", None)
+        })
+        headers = {'Content-Type': 'application/json'}
+        response = requests.request("POST", url, headers=headers, data=payload)
         try:
-            # client = self.get_conn()
-            conn = self.get_connection(self.lakefs_conn_id)
-            import requests
-            import json
-            url = conn.host+"/api/v1/auth/login"
-            payload = json.dumps({
-                "access_key_id": conn.extra_dejson.get("access_key_id", None),
-                "secret_access_key": conn.extra_dejson.get("secret_access_key", None)
-            })
-            headers = {'Content-Type': 'application/json'}
-            response = requests.request("POST", url, headers=headers, data=payload)
-            if response.status_code == 200:
-                return True, "Connection successfully tested"
-            else:
-                return False, "Connection Failed, Unauthorized"
-        except Exception as e:
-            return False, str(e)
+            response.raise_for_status()
+            return True,"Connection Tested Successfully"
+        except requests.exceptions.URLRequired as e:
+            return  False,str(e)
+        except requests.exceptions.HTTPError as e:
+            return  False,str(e)
+        except requests.exceptions.RequestException as e:
+            return  False,str(e)

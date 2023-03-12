@@ -6,7 +6,7 @@ def get_provider_info():
         "description": "An Airflow provider of lakeFS",
         "hook-class-names": ["lakefs_provider.hooks.lakefs_hook.LakeFSHook"],
         "connection-types": [{
-            'connection-type': 'LakeFS',
+            'connection-type': 'lakefs',
             'hook-class-name': 'lakefs_provider.hooks.lakefs_hook.LakeFSHook',
         }
         ],
