@@ -28,10 +28,10 @@ from airflow.operators.python import PythonOperator
 default_args = {
     "owner": "lakeFS",
     "branch": "example-branch",
-    "repo": "test-repo",
+    "repo": "example-repo",
     "path": "path/to/_SUCCESS",
     "default-branch": "main",
-    "lakefs_conn_id": "lakefs_conn_id"
+    "lakefs_conn_id": "conn_lakefs"
 }
 
 
