@@ -44,11 +44,7 @@ class LakeFSHook(BaseHook):
         configuration = lakefs_client.Configuration()
         configuration.username = conn.login
         configuration.password = conn.password
-        # configuration.username = conn.extra_dejson.get("access_key_id", None)
-        # configuration.password = conn.extra_dejson.get("secret_access_key", None)
         configuration.host = conn.host
-        print("4534535$%$%",conn.login,conn.password)
-        print(configuration.username,configuration.password)
         if not configuration.username:
             raise AirflowException("access_key_id must be specified in the lakeFS connection details")
         if not configuration.password:
