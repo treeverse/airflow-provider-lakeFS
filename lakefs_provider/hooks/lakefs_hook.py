@@ -31,9 +31,9 @@ class LakeFSHook(BaseHook):
     :type lakefs_conn_id: str
     """
     conn_name_attr = "lakefs_conn_id"
-    default_conn_name = "lakefs_conn_id"
+    default_conn_name = "lakefs_default"
     conn_type = "lakefs"
-    hook_name = "lakefs"
+    hook_name = "lakeFS"
 
     def __init__(self, lakefs_conn_id: str) -> None:
         super().__init__()
@@ -42,9 +42,13 @@ class LakeFSHook(BaseHook):
     def get_conn(self) -> LakeFSClient:
         conn = self.get_connection(self.lakefs_conn_id)
         configuration = lakefs_client.Configuration()
-        configuration.username = conn.extra_dejson.get("access_key_id", None)
-        configuration.password = conn.extra_dejson.get("secret_access_key", None)
+        configuration.username = conn.login
+        configuration.password = conn.password
+        # configuration.username = conn.extra_dejson.get("access_key_id", None)
+        # configuration.password = conn.extra_dejson.get("secret_access_key", None)
         configuration.host = conn.host
+        print("4534535$%$%",conn.login,conn.password)
+        print(configuration.username,configuration.password)
         if not configuration.username:
             raise AirflowException("access_key_id must be specified in the lakeFS connection details")
         if not configuration.password:
@@ -55,11 +59,11 @@ class LakeFSHook(BaseHook):
         return LakeFSClient(configuration)
 
     @staticmethod
-    def get_ui_field_behaviour() -> dict[str, Any]:
+    def get_ui_field_behaviour():
         """Returns custom field behaviour"""
         return {
-            "hidden_fields": ["login", "schema", "password", "description","port"],
-            "relabeling": {},
+            "hidden_fields": ["schema", "description","port","extra"],
+            "relabeling": {"login": "access key","password":" secret key"},
             "placeholders": {},
         }
 
@@ -152,9 +156,8 @@ class LakeFSHook(BaseHook):
         import json
         url = conn.host+"/api/v1/auth/login"
         payload = json.dumps({
-            "access_key_id": conn.extra_dejson.get("access_key_id", None),
-            "secret_access_key": conn.extra_dejson.get("secret_access_key", None)
-        })
+            "access_key_id": conn.login,
+            "secret_access_key": conn.password})
         headers = {'Content-Type': 'application/json'}
         response = requests.request("POST", url, headers=headers, data=payload)
         try:
