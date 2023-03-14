@@ -42,8 +42,12 @@ class LakeFSHook(BaseHook):
     def get_conn(self) -> LakeFSClient:
         conn = self.get_connection(self.lakefs_conn_id)
         configuration = lakefs_client.Configuration()
-        configuration.username = conn.login
-        configuration.password = conn.password
+        if conn.conn_type == "http" and conn.extra_dejson.get("access_key_id") and conn.extra_dejson.get("secret_access_key"):
+            configuration.username = conn.extra_dejson.get("access_key_id")
+            configuration.password = conn.extra_dejson.get("secret_access_key")
+        else:
+            configuration.username = conn.login
+            configuration.password = conn.password
         configuration.host = conn.host
         if not configuration.username:
             raise AirflowException("access_key_id must be specified in the lakeFS connection details")
@@ -151,9 +155,16 @@ class LakeFSHook(BaseHook):
         import requests
         import json
         url = conn.host+"/api/v1/auth/login"
+        if conn.conn_type == "http" and conn.extra_dejson.get("access_key_id") and conn.extra_dejson.get("secret_access_key"):
+            login = conn.extra_dejson.get("access_key_id")
+            password = conn.extra_dejson.get("secret_access_key")
+        else:
+            login = conn.login
+            password = conn.password
+
         payload = json.dumps({
-            "access_key_id": conn.login,
-            "secret_access_key": conn.password})
+            "access_key_id": login,
+            "secret_access_key": password})
         headers = {'Content-Type': 'application/json'}
         response = requests.request("POST", url, headers=headers, data=payload)
         try:
