@@ -59,7 +59,7 @@ jobs:
       - name: Run lakeFS DAG
         run: |
           cd astro
-          astro dev run connections add conn_lakefs --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-extra='{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}'
+          astro dev run connections add conn_lakefs --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-login="${{ env.KEY }}" --conn-password="${{ env.SECRET }}"
           astro dev run dags unpause lakeFS_workflow
           astro dev run dags trigger lakeFS_workflow
           sleep 30
