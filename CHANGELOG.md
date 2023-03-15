@@ -5,10 +5,10 @@
   * Update lakefs_hook.py (#50)
   * Adding custom form connection (#49)
   * Verify workflow success in CI on Airflow (#48)
-  * use lakefs 0.91.0 (#46)
-  * feat: create symlink operator (#41)
+  * Use lakefs 0.91.0 (#46)
+  * Feature: create symlink operator (#41)
   * Fix integration test to work on lakeFS/KV (#43)
-  * update docker compose to align with kv new configuration (#37)
+  * Update docker-compose to align with key-value new configuration (#37)
 
 ## 0.44.0
 
