@@ -1,13 +1,12 @@
-name: release
+name: publish
 
 on:
-  pull_request:
   release:
     types: [published]
   workflow_dispatch:
 
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -19,6 +18,7 @@ jobs:
     - name: Publish
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        repository-url: https://test.pypi.org/legacy/
+        # for testing uncommit the test repository url
+        #repository-url: https://test.pypi.org/legacy/
         password: ${{ secrets.PYPI_API_TOKEN }}
         verbose: true
