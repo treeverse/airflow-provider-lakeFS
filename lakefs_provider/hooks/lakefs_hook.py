@@ -63,7 +63,7 @@ class LakeFSHook(BaseHook):
         """Returns custom field behaviour"""
         return {
             "hidden_fields": ["schema", "description","port","extra"],
-            "relabeling": {"login": "access key","password":" secret key"},
+            "relabeling": {"host": "lakeFS URL", "login": "lakeFS access key", "password":"lakeFS secret key"},
             "placeholders": {},
         }
 
