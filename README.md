@@ -46,6 +46,13 @@ For more information see the [official lakeFS documentation](https://docs.lakefs
     - Testing of production data before exposing it to users / consumers.
     - Testing of intermediate results in your DAG to avoid cascading quality issues.
 
+
+## Publishing
+
+The repository include GitHub workflow that is trigger on publish event and will build and push the package to PyPI.
+**Note** that the package version is specified in the `setup.py` - make sure to update before publishing.
+
+
 ## Community
 
 Stay up to date and get lakeFS support via:
