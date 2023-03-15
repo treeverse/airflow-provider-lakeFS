@@ -50,7 +50,12 @@ For more information see the [official lakeFS documentation](https://docs.lakefs
 ## Publishing
 
 The repository include GitHub workflow that is trigger on publish event and will build and push the package to PyPI.
-**Note** that the package version is specified in the `setup.py` - make sure to update before publishing.
+
+Use the following steps to release:
+
+- Update `setup.py` with the new package version
+- Update `CHANGELOG.md` with changes for the new release
+- Use GitHub release, use semver vX.X.X
 
 
 ## Community
