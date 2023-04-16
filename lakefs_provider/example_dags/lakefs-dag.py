@@ -1,8 +1,9 @@
 from typing import Dict
-from collections.abc import Sequence
+from typing import Sequence
 
 from collections import namedtuple
 from itertools import zip_longest
+import time
 
 from io import StringIO
 
@@ -35,7 +36,7 @@ default_args = {
 }
 
 
-CONTENT = 'It is not enough to succeed.  Others must fail.'
+CONTENT = 'It is not enough to succeed.  Others must fail.\n' + time.asctime()
 COMMIT_MESSAGE_1 = 'committing to lakeFS using airflow!'
 MERGE_MESSAGE_1 = 'merging to the default branch'
 
