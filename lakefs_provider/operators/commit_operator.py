@@ -36,7 +36,7 @@ class LakeFSCommitOperator(BaseOperator):
     template_ext = ()
     ui_color = '#f4a460'
 
-    metadata_prefix = "::lakefs::"
+    metadata_prefix = "::lakefs::Airflow::"
 
     # DAG metadata to add to commit, expanded after fetching appropriate
     # metadata.  The key of each metadata item will be prefixed
