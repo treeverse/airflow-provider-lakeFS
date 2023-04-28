@@ -96,7 +96,6 @@ class LakeFSCommitOperator(BaseOperator):
         # TODO(ariels): Configurably filter metadata keys.
 
         cdd = self._get_current_dag_dict(context)
-        self.log.info("[DEBUG] cdd", cdd)
 
         for k, template in self.metadata_templates.items():
             try:
@@ -107,8 +106,6 @@ class LakeFSCommitOperator(BaseOperator):
 
 
         ref = hook.commit(self.repo, self.branch, self.msg, self.metadata)
-
-        # TODO(ariels): Add lakeFS commit URL and commit UI URLs as links!
 
         return ref
 
