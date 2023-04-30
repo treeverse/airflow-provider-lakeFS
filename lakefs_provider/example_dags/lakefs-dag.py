@@ -96,7 +96,7 @@ def lakeFS_workflow():
     # Create a path.
     task_create_file = LakeFSUploadOperator(
         task_id='upload_file',
-        content=NamedStringIO(content=f"{CONTENT_PREFIX} @time.asctime()", name='content'))
+        content=NamedStringIO(content=f"{CONTENT_PREFIX} @{time.asctime()}", name='content'))
 
     task_get_branch_commit = LakeFSGetCommitOperator(
         do_xcom_push=True,

@@ -4,9 +4,10 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
+from lakefs_provider.operators.with_metadata_operator import WithLakeFSMetadataOperator
 
 
-class LakeFSMergeOperator(BaseOperator):
+class LakeFSMergeOperator(WithLakeFSMetadataOperator):
     """
     Merge source branch to destination branch
 
@@ -53,6 +54,9 @@ class LakeFSMergeOperator(BaseOperator):
                       self.destination_branch, self.repo, self.source_ref)
 
         self.metadata["airflow_task_id"] = self.task_id
+
+        self.enrich_metadata(self.metadata, context)
+
         ref = hook.merge(self.repo, self.source_ref, self.destination_branch, self.msg, self.metadata)
 
         return ref
