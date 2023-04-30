@@ -52,7 +52,7 @@ class LakeFSMergeOperator(BaseOperator):
         self.log.info("Merging to lakeFS branch '%s' in repo '%s' from source ref '%s'",
                       self.destination_branch, self.repo, self.source_ref)
 
-        self.metadata.__setitem__("airflow_task_id", self.task_id)
+        self.metadata["airflow_task_id"] = self.task_id
         ref = hook.merge(self.repo, self.source_ref, self.destination_branch, self.msg, self.metadata)
 
         return ref

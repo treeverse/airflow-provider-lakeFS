@@ -91,7 +91,7 @@ class LakeFSCommitOperator(BaseOperator):
         self.log.info("Committing to lakeFS branch '%s' in repo '%s'",
                       self.branch, self.repo)
 
-        self.metadata.__setitem__("airflow_task_id", self.task_id)
+        self.metadata["airflow_task_id"] = self.task_id
 
         # TODO(ariels): Configurably filter metadata keys.
 
@@ -100,7 +100,7 @@ class LakeFSCommitOperator(BaseOperator):
         for k, template in self.metadata_templates.items():
             try:
                 expanded = str(self.render_template(template, cdd))
-                self.metadata.__setitem__(self.metadata_key(k), expanded)
+                self.metadata[self.metadata_key(k)] = expanded
             except SQLAlchemyError as sql_e:
                 self.log.warning(f"metadata {k} not added: ${sql_e} (possibly undefined fields)")
 
