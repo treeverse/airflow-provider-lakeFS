@@ -1,8 +1,9 @@
 from typing import Dict
-from collections.abc import Sequence
+from typing import Sequence
 
 from collections import namedtuple
 from itertools import zip_longest
+import time
 
 from io import StringIO
 
@@ -35,7 +36,7 @@ default_args = {
 }
 
 
-CONTENT = 'It is not enough to succeed.  Others must fail.'
+CONTENT_PREFIX = 'It is not enough to succeed.  Others must fail.'
 COMMIT_MESSAGE_1 = 'committing to lakeFS using airflow!'
 MERGE_MESSAGE_1 = 'merging to the default branch'
 
@@ -43,9 +44,9 @@ MERGE_MESSAGE_1 = 'merging to the default branch'
 IdAndMessage = namedtuple('IdAndMessage', ['id', 'message'])
 
 
-def check_equality(task_instance, actual: str, expected: str) -> None:
-    if actual != expected:
-        raise AirflowFailException(f'Got {actual} instead of {expected}')
+def check_expected_prefix(task_instance, actual: str, expected: str) -> None:
+    if not actual.startswith(expected):
+        raise AirflowFailException(f'Got:\n"{actual}"\nwhich does not start with\n{expected}')
 
 
 def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messages: Sequence[str], amount: int=100) -> None:
@@ -95,7 +96,7 @@ def lakeFS_workflow():
     # Create a path.
     task_create_file = LakeFSUploadOperator(
         task_id='upload_file',
-        content=NamedStringIO(content=CONTENT, name='content'))
+        content=NamedStringIO(content=f"{CONTENT_PREFIX} @time.asctime()", name='content'))
 
     task_get_branch_commit = LakeFSGetCommitOperator(
         do_xcom_push=True,
@@ -141,11 +142,11 @@ def lakeFS_workflow():
 
     # Check its contents
     task_check_contents = PythonOperator(
-        task_id='check_equality',
-        python_callable=check_equality,
+        task_id='check_expected_prefix',
+        python_callable=check_expected_prefix,
         op_kwargs={
             'actual': '''{{ task_instance.xcom_pull(task_ids='get_object', key='return_value') }}''',
-            'expected': CONTENT,
+            'expected': CONTENT_PREFIX,
         })
 
     # Merge the changes back to the main branch.
