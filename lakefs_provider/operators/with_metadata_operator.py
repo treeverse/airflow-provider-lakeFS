@@ -47,7 +47,7 @@ class WithLakeFSMetadataOperator(BaseOperator):
 
         return ret
 
-    def enrich_metadata(self, metadata: Dict[str, Any], context: Dict[str, Any]):
+    def enrich_metadata(self, context: Dict[str, Any]):
         """Enrich metadata with values for lakeFS."""
         cdd = self._get_current_dag_dict(context)
         for k, template in self.__metadata_templates.items():

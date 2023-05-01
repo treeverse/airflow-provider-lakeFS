@@ -51,7 +51,7 @@ class LakeFSCommitOperator(WithLakeFSMetadataOperator):
 
         self.metadata["airflow_task_id"] = self.task_id
 
-        self.enrich_metadata(self.metadata, context)
+        self.enrich_metadata(context)
 
         ref = hook.commit(self.repo, self.branch, self.msg, self.metadata)
 
