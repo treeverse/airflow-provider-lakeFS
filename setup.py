@@ -18,7 +18,7 @@ setup(
         ]
     },
     license='Apache License 2.0',
-    packages=['lakefs_provider', 'lakefs_provider.hooks',
+    packages=['lakefs_provider', 'lakefs_provider.hooks', 'lakefs_provider.links',
               'lakefs_provider.sensors', 'lakefs_provider.operators',
               'lakefs_provider.example_dags'],
     install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.91.0'],
