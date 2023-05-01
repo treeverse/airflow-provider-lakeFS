@@ -39,6 +39,12 @@ class LakeFSHook(BaseHook):
         super().__init__()
         self.lakefs_conn_id = lakefs_conn_id
 
+    def get_base_url(self) -> str:
+        base = self.get_connection(self.lakefs_conn_id).host
+        if not (base.startswith('http://') or base.startswith('https://')):
+            base = f"http://{base}"
+        return base
+
     def get_conn(self) -> LakeFSClient:
         conn = self.get_connection(self.lakefs_conn_id)
         configuration = lakefs_client.Configuration()
