@@ -2,7 +2,7 @@
 
 ## 0.46.0
 
-  * Add lakeFS DAG metadata to commits and to merges (#47, #56, #57).
+  * Add Airflow DAG metadata to lakeFS commits and to merges (#47, #56, #57).
 
     Adds a clickable button (Airflow "extra link") to these tasks that takes
     you to the commit on lakeFS.  When used with a supporting lakeFS
