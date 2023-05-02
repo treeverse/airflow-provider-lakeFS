@@ -93,8 +93,14 @@ jobs:
         if: ${{ always() }}
         run: docker-compose -f ops/docker-compose.yaml logs --tail=1000 lakefs
 
-      - name: airflow logs
+      - name: airflow scheduler logs
         if: ${{ always() }}
         run: |
           cd astro
           astro dev logs --scheduler
+
+      - name: airflow triggerer logs
+        if: ${{ always() }}
+        run: |
+          cd astro
+          astro dev logs --triggerer
