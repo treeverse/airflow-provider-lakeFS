@@ -1,5 +1,12 @@
 # CHANGELOG.md
 
+## 0.46.1
+
+  * Actually add those missing Airflow "extra links" (#67), missing in
+    0.46.0 :flushed:.  Without this you get buttons on lakeFS that take you
+    to Airflow, but no "extra links" (buttons) on Airflow that take you to
+    lakeFS.
+
 ## 0.46.0
 
   * Add Airflow DAG metadata to lakeFS commits and to merges (#47, #56, #57).
