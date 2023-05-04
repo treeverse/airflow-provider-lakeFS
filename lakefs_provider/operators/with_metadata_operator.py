@@ -14,13 +14,12 @@ class WithLakeFSMetadataOperator(BaseOperator):
     __metadata_templates = {
         "dag_run_id": "{{dag_run.run_id}}",
         "dag_id": "{{dag.dag_id}}",
-        "logical_date": "{{logical_date}}",
+        "logical_date[iso8601]": "{{logical_date}}",
         "data_interval_start[iso8601]": "{{data_interval_start}}",
         "data_interval_end[iso8601]": "{{data_interval_end}}",
-        "last_scheduling_decision": "{{dag_run.last_scheduling_decision}}",
+        "last_scheduling_decision[iso8601]": "{{dag_run.last_scheduling_decision}}",
         "run_type": "{{dag_run.run_type}}",
-        "external_trigger": "{{dag_run.external_trigger}}",
-        "conf": "{{params}}",
+        "external_trigger[boolean]": "{{dag_run.external_trigger}}",
         "note": "{{dag_run.note}}",
         # build_airflow_url_with_query can only run from a Flask app
         # context.  Fake URLs instead.
