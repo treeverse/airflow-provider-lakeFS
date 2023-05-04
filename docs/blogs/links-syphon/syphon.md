@@ -7,23 +7,23 @@ By [Ariel Shaqed (Scolnicov)]
 "How do I integrate X with lakeFS" is an ever-green question on [lakeFS
 Slack][lakefs-slack].  lakeFS takes a "tooling-first" strategy to data
 management: it slots into your existing lineup of tools.  So a significant
-part of our work on lakeFS is devoted to leveraging the tools mutually to
-get improve these integrations.  Our latest addition is Project Syphon!
+part of our work on lakeFS is devoted to leveraging lakeFS and these other
+tools to improve these integrations.  Our latest addition is Project Syphon!
 
 <img alt="Soda syphon, by Avi Nahmias, available from https://commons.wikimedia.org/wiki/User:Avin" src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Soda_syphon_IMG_1505C.jpg" width=400/>
 
 Airflow was one of our earliest integrations: Itai published the original
 [Air and Water][airflow-air-and-water-blog-1] 2 years ago.  It's time to
 deepen our integrations!  The latest release of the lakeFS provider for
-Airflow, codename "Project Syphon", adds deep linking between Airflow DAG
-runs and the lakeFS commits that they create.  It connects the two for
-interactive or programmatic use.
+Airflow, codename "Project Syphon", adds deep linking and metadata between
+Airflow DAG runs and the lakeFS commits that they create.  It connects the
+two for interactive or programmatic use.
 
 The new Airflow operators add formatted metadata to your commits.  lakeFS
-already uses this metadata to link to Airflow.  These metadata keys also
-work with any formatted metadata keys.  You can leverage such metadata to
-add your own operable metadata on any commits you perform from _any_ tools
-(not only from Airflow).
+uses this metadata to link to Airflow.  Project Syphon adds flexibility to
+these keys by defining a format for metadata keys.  You can leverage such
+metadata to add your own operable metadata on any commits you perform from
+_any_ tools (not only from Airflow).
 
 How are you integrating these new features into your workflows?  How can we
 improve them and help you?  Please let us know on [lakeFS
@@ -41,8 +41,9 @@ airflow-provider-lakefs>=0.46.1
 That is pretty much all.  Using LakeFSCommitOperator or LakeFSMergeOperator
 normally in your DAGs will add metadata to your commits.
 
-lakeFS can interpret Airflow provider metadata to link back to Airflow
-starting at version **TBD TBD** 0.100.0 **TBD TBD**.
+Any version of lakeFS can serve commit metadata to clients.  The lakeFS GUI
+adds the ability to interpret Airflow provider metadata to link back to
+Airflow starting at version **TBD TBD** 0.100.0 **TBD TBD**.
 
 ### Metadata on lakeFS commits
 
