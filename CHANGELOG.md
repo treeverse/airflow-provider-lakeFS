@@ -1,5 +1,9 @@
 # CHANGELOG.md
 
+## 0.46.2
+
+  * Update lakeFS client SDK to v0.101.0
+
 ## 0.46.1
 
   * Actually add those missing Airflow "extra links" (#67), missing in
