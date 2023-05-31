@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 0.46.2
+
+  * Update lakeFS client SDK to v0.101.0.
+    Airflow uses lakeFS merge API, you must be using lakeFS version 0.91.0 or
+    higher because of breaking changes in response format. 
+
 ## 0.46.1
 
   * Actually add those missing Airflow "extra links" (#67), missing in
