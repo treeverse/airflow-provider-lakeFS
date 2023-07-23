@@ -50,7 +50,8 @@ Airflow starting at version **TBD TBD** 0.100.0 **TBD TBD**.
 When examining a commit in lakeFS, the UI shows metadata and a link "Open
 Airflow UI" to the DAG run in the UI.
 
-![lakeFS commit UI with "Open Airflow UI" button][lakefs-commit-ui-open-button]
+| ![lakeFS commit UI with "Open Airflow UI" button][lakefs-commit-ui-open-button] |
+| ---- |
 
 The button "Open Airflow UI" links to the generating DAG run on Airflow.
 Metadata from the DAG run on Airflow is added to the commit, in keys
@@ -61,7 +62,8 @@ starting "::lakefs::".
 When examining the task of a LakeFSCommitOperator or a LakeFSMergeOperator
 of a workflow on Airflow, the UI shows a "lakeFS" button.
 
-![Airflow DAG UI with "lakeFS" button][airflow-task-ui-open-button]
+| ![Airflow DAG UI with "lakeFS" button][airflow-task-ui-open-button] |
+| ---- |
 
 This button links to the generated commit on lakeFS.
 
