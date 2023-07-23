@@ -12,18 +12,32 @@ tools to improve these integrations.  Our latest addition is Project Syphon!
 
 <img alt="Soda syphon, by Avi Nahmias, available from https://commons.wikimedia.org/wiki/User:Avin" src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Soda_syphon_IMG_1505C.jpg" width=400/>
 
-Airflow was one of our earliest integrations: Itai published the original
-[Air and Water][airflow-air-and-water-blog-1] 2 years ago.  It's time to
-deepen our integrations!  The latest release of the lakeFS provider for
-Airflow, codename "Project Syphon", adds deep linking and metadata between
-Airflow DAG runs and the lakeFS commits that they create.  It connects the
-two for interactive or programmatic use.
+Airflow was one of our earliest integrations: My colleague Itai published
+the original [Air and Water][airflow-air-and-water-blog-1] 2 years ago.
+Airflow runs workflows, known as "DAGs".  Our users typically DAGs to
+generate or merge data.  lakeFS is a great way to track consistent versions
+of data, and the [lakeFS Airflow provider][pypi-lakefs-airflow-provider]
+makes it easy for Airflow DAGs to operate on lakeFS repositories.  Now it's
+time to deepen our integrations!
 
-The new Airflow operators add formatted metadata to your commits.  lakeFS
-uses this metadata to link to Airflow.  Project Syphon adds flexibility to
-these keys by defining a format for metadata keys.  You can leverage such
-metadata to add your own operable metadata on any commits you perform from
-_any_ tools (not only from Airflow).
+An Airflow DAG that modifies data will typically commit or merge to a
+branch.  Airflow tracks DAG runs, their logs, their intermediate data, and
+additional user-defined metadata.  lakeFS does something similar for data:
+it tracks versions of data, and additional user-defined metadata.  Our users
+were faced with the challenge of uncovering the exact connection between
+Airflow DAG runs and the commits that they created on lakeFS.
+
+The latest release of the lakeFS provider for Airflow, codename "Project
+Syphon", adds deep linking and metadata between Airflow DAG runs and the
+lakeFS commits that they create.  It connects the two for interactive or
+programmatic use.  Our Airflow operators now add formatted metadata to your
+commits.  lakeFS uses this metadata to link to Airflow DAGs.
+
+You can also leverage these new capabilities to add your own operable
+metadata to any commits that you perform from _any_ tool, not only from
+Airflow.  lakeFS now defines a general format for metadata keys that will be
+forwards-compatible.  By defining metadata keys that match this format, your
+metadata will operate with lakeFS.
 
 How are you integrating these new features into your workflows?  How can we
 improve them and help you?  Please let us know on [lakeFS
@@ -72,7 +86,7 @@ This button links to the generated commit on lakeFS.
 Knowing how all this works can help you perform additional tasks by
 leveraging these features.  Part of the tooling approach of Airflow and
 lakeFS is to provide simple interfaces that can readily be used to integrate
-and reliably extract data.  Syphon is built by combining tools:
+and reliably extract data.  We built all these features by combining tools:
 
 * Extra links in Airflow tasks
 * Commit metadata in lakeFS
@@ -151,3 +165,4 @@ using the key `lakefs_commit`.  That key is a Python `dict`:
 [airflow-task-ui-open-button]:  Screenshot-airflow-to-lakefs-link.png
 [lakefs-slack]:  https://lakefs.io/slack
 [airflow-dagrun-rest-api]:  https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html#tag/DAGRun
+[pypi-lakefs-airflow-provider]:  https://pypi.org/project/airflow-provider-lakefs/
