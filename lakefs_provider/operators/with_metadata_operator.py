@@ -1,4 +1,8 @@
 from typing import Any, Dict
+
+import packaging.version
+
+from airflow import __version__ as airflow_version
 from airflow.configuration import conf as airflow_conf
 from airflow.models import BaseOperator
 from sqlalchemy.exc import SQLAlchemyError
@@ -20,7 +24,6 @@ class WithLakeFSMetadataOperator(BaseOperator):
         "last_scheduling_decision[iso8601]": "{{dag_run.last_scheduling_decision}}",
         "run_type": "{{dag_run.run_type}}",
         "external_trigger[boolean]": "{{dag_run.external_trigger}}",
-        "note": "{{dag_run.note}}",
         # build_airflow_url_with_query can only run from a Flask app
         # context.  Fake URLs instead.
         "url[url:id]": '{{endpoint_url}}/api/v1/dags/{{dag.dag_id}}/dagRuns/{{dag_run.run_id}}',
@@ -48,6 +51,10 @@ class WithLakeFSMetadataOperator(BaseOperator):
 
     def enrich_metadata(self, context: Dict[str, Any]):
         """Enrich metadata with values for lakeFS."""
+        # add 'note' value to metadata if Airflow is version 2.5.0 or later
+        if packaging.version.parse(airflow_version) >= packaging.version.parse("2.5.0"):
+            self.__metadata_templates["note"] = "{{dag_run.note}}"
+
         cdd = self._get_current_dag_dict(context)
         for k, template in self.__metadata_templates.items():
             try:
