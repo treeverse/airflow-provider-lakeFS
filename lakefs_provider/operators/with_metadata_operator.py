@@ -1,10 +1,8 @@
 from typing import Any, Dict
 
-import packaging.version
-
 from airflow import __version__ as airflow_version
 from airflow.configuration import conf as airflow_conf
-from airflow.models import BaseOperator
+from airflow.models import BaseOperator, DagRun
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -51,8 +49,7 @@ class WithLakeFSMetadataOperator(BaseOperator):
 
     def enrich_metadata(self, context: Dict[str, Any]):
         """Enrich metadata with values for lakeFS."""
-        # add 'note' value to metadata if Airflow is version 2.5.0 or later
-        if packaging.version.parse(airflow_version) >= packaging.version.parse("2.5.0"):
+        if hasattr(DagRun, "note"): # Older Airflow versions don't have DagRun.note.
             self.__metadata_templates["note"] = "{{dag_run.note}}"
 
         cdd = self._get_current_dag_dict(context)
