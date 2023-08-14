@@ -8,7 +8,7 @@ on:
 jobs:
   build-provider:
     name: build latest provider
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
@@ -59,10 +59,16 @@ jobs:
       - name: Run lakeFS DAG
         run: |
           cd astro
-          astro dev run connections add conn_lakefs --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-extra='{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}'
+          astro dev run connections add conn_lakefs --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-login="${{ env.KEY }}" --conn-password="${{ env.SECRET }}"
           astro dev run dags unpause lakeFS_workflow
           astro dev run dags trigger lakeFS_workflow
           sleep 30
+
+      - name : Run DAG state check script
+        id : dag_status_id
+        run: |
+            chmod +x dag_status.py
+            python3 dag_status.py
 
       - name: Wait until Airflow makes output file available on main
         env:
@@ -74,12 +80,27 @@ jobs:
           max_attempts: 30
           command: AWS_ACCESS_KEY_ID=${{ env.KEY }} AWS_SECRET_ACCESS_KEY=${{ env.SECRET }} aws s3 cp --endpoint-url=http://s3.local.lakefs.io:8000 s3://example-repo/main/path/to/_SUCCESS -
 
+      - name: Wait symlink file creation and validate it
+        env:
+          AWS_EC2_METADATA_DISABLED: true
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 3
+          max_attempts: 30
+          command: docker-compose -f ops/docker-compose.yaml exec -T lakefs ls lakefs/data/block/data/symlinks/example-repo/example-branch/path/to/symlink.txt
+
       - name: lakeFS logs
         if: ${{ always() }}
         run: docker-compose -f ops/docker-compose.yaml logs --tail=1000 lakefs
 
-      - name: airflow logs
+      - name: airflow scheduler logs
         if: ${{ always() }}
         run: |
           cd astro
           astro dev logs --scheduler
+
+      - name: airflow triggerer logs
+        if: ${{ always() }}
+        run: |
+          cd astro
+          astro dev logs --triggerer

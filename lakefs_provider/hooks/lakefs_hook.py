@@ -30,19 +30,31 @@ class LakeFSHook(BaseHook):
         access_key_id, secret_access_key and lakeFS server endpoint.
     :type lakefs_conn_id: str
     """
+    conn_name_attr = "lakefs_conn_id"
+    default_conn_name = "lakefs_default"
+    conn_type = "lakefs"
+    hook_name = "lakeFS"
 
     def __init__(self, lakefs_conn_id: str) -> None:
         super().__init__()
         self.lakefs_conn_id = lakefs_conn_id
 
+    def get_base_url(self) -> str:
+        base = self.get_connection(self.lakefs_conn_id).host
+        if not (base.startswith('http://') or base.startswith('https://')):
+            base = f"http://{base}"
+        return base
+
     def get_conn(self) -> LakeFSClient:
         conn = self.get_connection(self.lakefs_conn_id)
-
         configuration = lakefs_client.Configuration()
-        configuration.username = conn.extra_dejson.get("access_key_id", None)
-        configuration.password = conn.extra_dejson.get("secret_access_key", None)
+        if conn.conn_type == "http" and conn.extra_dejson.get("access_key_id") and conn.extra_dejson.get("secret_access_key"):
+            configuration.username = conn.extra_dejson.get("access_key_id")
+            configuration.password = conn.extra_dejson.get("secret_access_key")
+        else:
+            configuration.username = conn.login
+            configuration.password = conn.password
         configuration.host = conn.host
-
         if not configuration.username:
             raise AirflowException("access_key_id must be specified in the lakeFS connection details")
         if not configuration.password:
@@ -51,6 +63,15 @@ class LakeFSHook(BaseHook):
             raise AirflowException("lakeFS endpoint must be specified in the lakeFS connection details")
 
         return LakeFSClient(configuration)
+
+    @staticmethod
+    def get_ui_field_behaviour():
+        """Returns custom field behaviour"""
+        return {
+            "hidden_fields": ["schema", "description","port","extra"],
+            "relabeling": {"host": "lakeFS URL", "login": "lakeFS access key", "password":"lakeFS secret key"},
+            "placeholders": {},
+        }
 
     def create_branch(self, repository: str, name: str, source_branch: str = 'main') -> str:
         client = self.get_conn()
@@ -124,3 +145,44 @@ class LakeFSHook(BaseHook):
     def get_object(self, repo: str, ref: str, path: str) -> IO:
         client = self.get_conn()
         return client.objects.get_object(repository=repo, ref=ref, path=path)
+
+    def create_symlink_file(self, repo: str, branch: str, location: str = None)  -> str:
+        client = self.get_conn()
+
+        kwargs = {}
+        if location:
+            kwargs["location"] = location
+
+        return client.metadata.create_symlink_file(repository=repo, branch=branch, **kwargs)["location"]
+
+    def delete_branch(self, repo: str, branch: str) -> str:
+        client = self.get_conn()
+        return client.branches.delete_branch(repository=repo, branch=branch)
+
+    def test_connection(self):
+        """Test  Connection"""
+        conn = self.get_connection(self.lakefs_conn_id)
+        import requests
+        import json
+        url = conn.host+"/api/v1/auth/login"
+        if conn.conn_type == "http" and conn.extra_dejson.get("access_key_id") and conn.extra_dejson.get("secret_access_key"):
+            login = conn.extra_dejson.get("access_key_id")
+            password = conn.extra_dejson.get("secret_access_key")
+        else:
+            login = conn.login
+            password = conn.password
+
+        payload = json.dumps({
+            "access_key_id": login,
+            "secret_access_key": password})
+        headers = {'Content-Type': 'application/json'}
+        response = requests.request("POST", url, headers=headers, data=payload)
+        try:
+            response.raise_for_status()
+            return True,"Connection Tested Successfully"
+        except requests.exceptions.URLRequired as e:
+            return  False,str(e)
+        except requests.exceptions.HTTPError as e:
+            return  False,str(e)
+        except requests.exceptions.RequestException as e:
+            return  False,str(e)

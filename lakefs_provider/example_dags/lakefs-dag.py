@@ -1,8 +1,8 @@
-from typing import Dict
-from collections.abc import Sequence
+from typing import Sequence
 
 from collections import namedtuple
 from itertools import zip_longest
+import time
 
 from io import StringIO
 
@@ -10,8 +10,11 @@ from airflow.decorators import dag
 from airflow.utils.dates import days_ago
 from airflow.exceptions import AirflowFailException
 
+from lakefs_client.exceptions import NotFoundException
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchOperator
+from lakefs_provider.operators.create_symlink_operator import LakeFSCreateSymlinkOperator
+from lakefs_provider.operators.delete_branch_operator import LakeFSDeleteBranchOperator
 from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
 from lakefs_provider.operators.upload_operator import LakeFSUploadOperator
 from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
@@ -34,7 +37,7 @@ default_args = {
 }
 
 
-CONTENT = 'It is not enough to succeed.  Others must fail.'
+CONTENT_PREFIX = 'It is not enough to succeed.  Others must fail.'
 COMMIT_MESSAGE_1 = 'committing to lakeFS using airflow!'
 MERGE_MESSAGE_1 = 'merging to the default branch'
 
@@ -42,9 +45,9 @@ MERGE_MESSAGE_1 = 'merging to the default branch'
 IdAndMessage = namedtuple('IdAndMessage', ['id', 'message'])
 
 
-def check_equality(task_instance, actual: str, expected: str) -> None:
-    if actual != expected:
-        raise AirflowFailException(f'Got {actual} instead of {expected}')
+def check_expected_prefix(task_instance, actual: str, expected: str) -> None:
+    if not actual.startswith(expected):
+        raise AirflowFailException(f'Got:\n"{actual}"\nwhich does not start with\n{expected}')
 
 
 def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messages: Sequence[str], amount: int=100) -> None:
@@ -58,6 +61,16 @@ def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messa
             return
         if expected != actual:
             raise AirflowFailException(f'Got {actual} instead of {expected}')
+
+
+def check_branch_object(task_instance, repo: str, branch: str, path: str):
+    hook = LakeFSHook(default_args['lakefs_conn_id'])
+    print(f"Trying to check if the following path exists: lakefs://{repo}/{branch}/{path}")
+    try:
+        hook.get_object(repo=repo, ref=branch, path=path)
+        raise AirflowFailException(f"Path found, this is not to be expected.")
+    except NotFoundException as e:
+        print(f"Path not found, as expected: {e}")
 
 
 class NamedStringIO(StringIO):
@@ -94,7 +107,7 @@ def lakeFS_workflow():
     # Create a path.
     task_create_file = LakeFSUploadOperator(
         task_id='upload_file',
-        content=NamedStringIO(content=CONTENT, name='content'))
+        content=NamedStringIO(content=f"{CONTENT_PREFIX} @{time.asctime()}", name='content'))
 
     task_get_branch_commit = LakeFSGetCommitOperator(
         do_xcom_push=True,
@@ -118,6 +131,9 @@ def lakeFS_workflow():
         metadata={"committed_from": "airflow-operator"}
     )
 
+    # Create symlink file for example-branch
+    task_create_symlink = LakeFSCreateSymlinkOperator(task_id="create_symlink")
+
     # Wait until the commit is completed.
     # Not really necessary in this DAG, since the LakeFSCommitOperator won't return before that.
     # Nonetheless we added it to show the full capabilities.
@@ -137,12 +153,12 @@ def lakeFS_workflow():
 
     # Check its contents
     task_check_contents = PythonOperator(
-        task_id='check_equality',
-        python_callable=check_equality,
+        task_id='check_expected_prefix',
+        python_callable=check_expected_prefix,
         op_kwargs={
             'actual': '''{{ task_instance.xcom_pull(task_ids='get_object', key='return_value') }}''',
-            'expected': CONTENT,
-        })        
+            'expected': CONTENT_PREFIX,
+        })
 
     # Merge the changes back to the main branch.
     task_merge = LakeFSMergeOperator(
@@ -181,10 +197,28 @@ def lakeFS_workflow():
             'messages': expectedMessages,
         })
 
+    task_delete_branch = LakeFSDeleteBranchOperator(
+        task_id='delete_branch',
+        repo=default_args.get('repo'),
+        branch=default_args.get('branch'),
+    )
+
+    task_check_branch_object = PythonOperator(
+        task_id='check_branch_object',
+        python_callable=check_branch_object,
+        op_kwargs={
+            'repo': default_args.get('repo'),
+            'branch': default_args.get('branch'),
+            'path': default_args.get('path'),
+        }
+    )
+
     task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit, task_sense_file]
-    task_create_file >> task_commit
+    task_create_file >> task_commit >> task_create_symlink
     task_sense_file >> task_get_file >> task_check_contents
     task_sense_commit >> task_merge >> [task_check_logs_bulk, task_check_logs_individually]
+    [task_check_contents, task_check_logs_bulk, task_check_logs_individually] >> task_delete_branch
+    task_delete_branch >> task_check_branch_object
 
 
 sample_workflow_dag = lakeFS_workflow()

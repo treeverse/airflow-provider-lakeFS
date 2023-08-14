@@ -1,12 +1,14 @@
 from typing import Any, Dict
 
-from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+from airflow.utils.helpers import build_airflow_url_with_query
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
+from lakefs_provider.links.lakefs_link import LakeFSLink
+from lakefs_provider.operators.with_metadata_operator import WithLakeFSMetadataOperator
 
 
-class LakeFSCommitOperator(BaseOperator):
+class LakeFSCommitOperator(WithLakeFSMetadataOperator):
     """
     Commit changes to a lakeFS branch.
 
@@ -32,6 +34,8 @@ class LakeFSCommitOperator(BaseOperator):
     template_ext = ()
     ui_color = '#f4a460'
 
+    operator_extra_links = [LakeFSLink()]
+
     @apply_defaults
     def __init__(self, lakefs_conn_id: str, repo: str, branch: str, msg: str, metadata: Dict[str, str] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -47,7 +51,15 @@ class LakeFSCommitOperator(BaseOperator):
         self.log.info("Committing to lakeFS branch '%s' in repo '%s'",
                       self.branch, self.repo)
 
-        self.metadata.__setitem__("airflow_task_id", self.task_id)
+        self.metadata["airflow_task_id"] = self.task_id
+
+        self.enrich_metadata(context)
+
         ref = hook.commit(self.repo, self.branch, self.msg, self.metadata)
+        LakeFSLink.persist(context,
+                           task_instance=self,
+                           lakefs_base_url=hook.get_base_url(),
+                           repo=self.repo,
+                           commit_digest=ref)
 
         return ref

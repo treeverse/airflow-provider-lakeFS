@@ -1,0 +1,22 @@
+name: Python unit tests
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  pytest:
+    name: Run python unit test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install requirements
+        run: |
+          pip install -r requirements.txt
+          pip install pytest==7.2.0 apache-airflow==2.5.0
+
+      - name: Run tests
+        run: pytest tests/

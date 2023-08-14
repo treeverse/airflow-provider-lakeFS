@@ -9,6 +9,7 @@ def get_provider_info():
             'connection-type': 'lakefs',
             'hook-class-name': 'lakefs_provider.hooks.lakefs_hook.LakeFSHook',
         }],
-        "extra-links": ["lakefs_provider.operators.create_branch_operator.ExtraLink"],
+
+        "extra-links": ["lakefs_provider.links.lakefs_link.LakeFSLink"],
         "versions": ["0.0.1"]
     }
