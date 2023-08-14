@@ -1,4 +1,3 @@
-from typing import Dict
 from typing import Sequence
 
 from collections import namedtuple
@@ -11,9 +10,11 @@ from airflow.decorators import dag
 from airflow.utils.dates import days_ago
 from airflow.exceptions import AirflowFailException
 
+from lakefs_client.exceptions import NotFoundException
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchOperator
 from lakefs_provider.operators.create_symlink_operator import LakeFSCreateSymlinkOperator
+from lakefs_provider.operators.delete_branch_operator import LakeFSDeleteBranchOperator
 from lakefs_provider.operators.merge_operator import LakeFSMergeOperator
 from lakefs_provider.operators.upload_operator import LakeFSUploadOperator
 from lakefs_provider.operators.commit_operator import LakeFSCommitOperator
@@ -60,6 +61,16 @@ def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messa
             return
         if expected != actual:
             raise AirflowFailException(f'Got {actual} instead of {expected}')
+
+
+def check_branch_object(task_instance, repo: str, branch: str, path: str):
+    hook = LakeFSHook(default_args['lakefs_conn_id'])
+    print(f"Trying to check if the following path exists: lakefs://{repo}/{branch}/{path}")
+    try:
+        hook.get_object(repo=repo, ref=branch, path=path)
+        raise AirflowFailException(f"Path found, this is not to be expected.")
+    except NotFoundException as e:
+        print(f"Path not found, as expected: {e}")
 
 
 class NamedStringIO(StringIO):
@@ -186,11 +197,28 @@ def lakeFS_workflow():
             'messages': expectedMessages,
         })
 
+    task_delete_branch = LakeFSDeleteBranchOperator(
+        task_id='delete_branch',
+        repo=default_args.get('repo'),
+        branch=default_args.get('branch'),
+    )
+
+    task_check_branch_object = PythonOperator(
+        task_id='check_branch_object',
+        python_callable=check_branch_object,
+        op_kwargs={
+            'repo': default_args.get('repo'),
+            'branch': default_args.get('branch'),
+            'path': default_args.get('path'),
+        }
+    )
 
     task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit, task_sense_file]
     task_create_file >> task_commit >> task_create_symlink
     task_sense_file >> task_get_file >> task_check_contents
     task_sense_commit >> task_merge >> [task_check_logs_bulk, task_check_logs_individually]
+    [task_check_contents, task_check_logs_bulk, task_check_logs_individually] >> task_delete_branch
+    task_delete_branch >> task_check_branch_object
 
 
 sample_workflow_dag = lakeFS_workflow()

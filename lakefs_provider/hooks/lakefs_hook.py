@@ -155,6 +155,10 @@ class LakeFSHook(BaseHook):
 
         return client.metadata.create_symlink_file(repository=repo, branch=branch, **kwargs)["location"]
 
+    def delete_branch(self, repo: str, branch: str) -> str:
+        client = self.get_conn()
+        return client.branches.delete_branch(repository=repo, branch=branch)
+
     def test_connection(self):
         """Test  Connection"""
         conn = self.get_connection(self.lakefs_conn_id)
