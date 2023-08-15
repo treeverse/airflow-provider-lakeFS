@@ -1,5 +1,7 @@
 from typing import Any, Dict, IO, Iterator
 
+from lakefs_provider.version import __version__
+
 import lakefs_client
 from lakefs_client import models
 from lakefs_client.client import LakeFSClient
@@ -31,6 +33,7 @@ class LakeFSHook(BaseHook):
     :type lakefs_conn_id: str
     """
     conn_name_attr = "lakefs_conn_id"
+    client_id = f"lakefs-airflow-provider ({__version__ if __version__ else 'dev'})"
     default_conn_name = "lakefs_default"
     conn_type = "lakefs"
     hook_name = "lakeFS"
@@ -62,7 +65,8 @@ class LakeFSHook(BaseHook):
         if not configuration.host:
             raise AirflowException("lakeFS endpoint must be specified in the lakeFS connection details")
 
-        return LakeFSClient(configuration)
+        return LakeFSClient(configuration,
+                            header_name='X-Lakefs-Client', header_value=self.client_id)
 
     @staticmethod
     def get_ui_field_behaviour():
