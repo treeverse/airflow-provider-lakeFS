@@ -48,7 +48,6 @@ class LakeFSMergeOperator(WithLakeFSMetadataOperator):
         self.destination_branch = destination_branch
         self.msg = msg
         self.metadata = metadata
-        self.task_id = kwargs.get("task_id")
 
     def execute(self, context: Dict[str, Any]) -> Any:
         hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)

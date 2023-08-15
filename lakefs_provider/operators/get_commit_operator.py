@@ -31,7 +31,6 @@ class LakeFSGetCommitOperator(BaseOperator):
         self.lakefs_conn_id = lakefs_conn_id
         self.repo = repo
         self.ref = ref
-        self.task_id = kwargs.get("task_id")
 
     def execute(self, context: Dict[str, Any]) -> Any:
         hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)

@@ -44,7 +44,6 @@ class LakeFSCommitOperator(WithLakeFSMetadataOperator):
         self.branch = branch
         self.msg = msg
         self.metadata = metadata
-        self.task_id = kwargs.get("task_id")
 
     def execute(self, context: Dict[str, Any]) -> Any:
         hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)
