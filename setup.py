@@ -1,6 +1,7 @@
 """Setup.py for the lakeFS Airflow provider package"""
 
 from setuptools import find_packages, setup
+from lakefs_provider.version import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -8,7 +9,7 @@ with open("README.md", "r") as fh:
 """Perform the package airflow-provider-lakeFS setup."""
 setup(
     name='airflow-provider-lakefs',
-    version='0.46.3',
+    version=__version__,
     description='A lakeFS provider package built by Treeverse.',
     long_description=long_description,
     long_description_content_type='text/markdown',

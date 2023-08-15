@@ -33,7 +33,7 @@ class LakeFSHook(BaseHook):
     :type lakefs_conn_id: str
     """
     conn_name_attr = "lakefs_conn_id"
-    client_id = f"lakefs-airflow-provider ({__version__ if __version__ else 'dev'})"
+    client_id = f"lakefs-airflow-provider/{__version__ if __version__ else 'dev'}"
     default_conn_name = "lakefs_default"
     conn_type = "lakefs"
     hook_name = "lakeFS"
