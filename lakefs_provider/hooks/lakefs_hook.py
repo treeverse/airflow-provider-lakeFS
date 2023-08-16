@@ -1,6 +1,6 @@
 from typing import Any, Dict, IO, Iterator
 
-from lakefs_provider.version import __version__
+from lakefs_provider import __version__
 
 import lakefs_client
 from lakefs_client import models
