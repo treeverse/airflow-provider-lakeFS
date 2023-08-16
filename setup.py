@@ -1,14 +1,26 @@
 """Setup.py for the lakeFS Airflow provider package"""
 
 from setuptools import find_packages, setup
+import re
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+def _get_version(fh):
+    r = re.compile("__version__ *= *[\"'](.*)[\"'] *")
+    for l in fh.readlines():
+        m = r.match(l)
+        if m:
+            return m.group(1)
+    raise RuntimeError(f"No lines in {fh.name} define __version__")
+
+with open("lakefs_provider/__init__.py", "r") as fh:
+    version = _get_version(fh)
+
 """Perform the package airflow-provider-lakeFS setup."""
 setup(
     name='airflow-provider-lakefs',
-    version='0.46.3',
+    version=version,
     description='A lakeFS provider package built by Treeverse.',
     long_description=long_description,
     long_description_content_type='text/markdown',
