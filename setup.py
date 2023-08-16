@@ -1,8 +1,6 @@
 """Setup.py for the lakeFS Airflow provider package"""
 
 from setuptools import find_packages, setup
-from lakefs_provider import __version__
-
 import re
 
 with open("README.md", "r") as fh:
