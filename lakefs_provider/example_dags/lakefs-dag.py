@@ -24,7 +24,6 @@ from lakefs_provider.sensors.file_sensor import LakeFSFileSensor
 from lakefs_provider.sensors.commit_sensor import LakeFSCommitSensor
 from airflow.operators.python import PythonOperator
 
-
 # These args will get passed on to each operator
 # You can override them on a per-task basis during operator initialization
 default_args = {
@@ -36,11 +35,9 @@ default_args = {
     "lakefs_conn_id": "conn_lakefs"
 }
 
-
 CONTENT_PREFIX = 'It is not enough to succeed.  Others must fail.'
 COMMIT_MESSAGE_1 = 'committing to lakeFS using airflow!'
 MERGE_MESSAGE_1 = 'merging to the default branch'
-
 
 IdAndMessage = namedtuple('IdAndMessage', ['id', 'message'])
 
@@ -50,9 +47,10 @@ def check_expected_prefix(task_instance, actual: str, expected: str) -> None:
         raise AirflowFailException(f'Got:\n"{actual}"\nwhich does not start with\n{expected}')
 
 
-def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messages: Sequence[str], amount: int=100) -> None:
+def check_logs(task_instance, repo: str, ref: str, commits: Sequence[str], messages: Sequence[str],
+               amount: int = 100) -> None:
     hook = LakeFSHook(default_args['lakefs_conn_id'])
-    expected = [ IdAndMessage(commit, message) for commit, message in zip(commits, messages) ]
+    expected = [IdAndMessage(commit, message) for commit, message in zip(commits, messages)]
     actuals = (IdAndMessage(message=commit['message'], id=commit['id'])
                for commit in hook.log_commits(repo, ref, amount))
     for (expected, actual) in zip_longest(expected, actuals):
@@ -68,7 +66,7 @@ def check_branch_object(task_instance, repo: str, branch: str, path: str):
     print(f"Trying to check if the following path exists: lakefs://{repo}/{branch}/{path}")
     try:
         hook.get_object(repo=repo, ref=branch, path=path)
-        raise AirflowFailException(f"Path found, this is not to be expected.")
+        raise AirflowFailException("Path found, this is not to be expected.")
     except NotFoundException as e:
         print(f"Path not found, as expected: {e}")
 
@@ -105,7 +103,7 @@ def lakeFS_workflow():
     )
 
     # Create a path.
-    task_create_file = LakeFSUploadOperator(
+    task_upload_file = LakeFSUploadOperator(
         task_id='upload_file',
         content=NamedStringIO(content=f"{CONTENT_PREFIX} @{time.asctime()}", name='content'))
 
@@ -146,13 +144,13 @@ def lakeFS_workflow():
     )
 
     # Get the file.
-    task_get_file = LakeFSGetObjectOperator(
+    task_get_object = LakeFSGetObjectOperator(
         task_id='get_object',
         do_xcom_push=True,
         ref=default_args['branch'])
 
     # Check its contents
-    task_check_contents = PythonOperator(
+    task_check_expected_prefix = PythonOperator(
         task_id='check_expected_prefix',
         python_callable=check_expected_prefix,
         op_kwargs={
@@ -161,7 +159,7 @@ def lakeFS_workflow():
         })
 
     # Merge the changes back to the main branch.
-    task_merge = LakeFSMergeOperator(
+    task_merge_branches = LakeFSMergeOperator(
         task_id='merge_branches',
         do_xcom_push=True,
         source_ref=default_args.get('branch'),
@@ -170,9 +168,9 @@ def lakeFS_workflow():
         metadata={"committer": "airflow-operator"}
     )
 
-    expectedCommits = ['''{{ ti.xcom_pull('merge_branches') }}''',
-                       '''{{ ti.xcom_pull('commit') }}''']
-    expectedMessages = [MERGE_MESSAGE_1, COMMIT_MESSAGE_1]
+    expected_commits = ['''{{ ti.xcom_pull('merge_branches') }}''',
+                        '''{{ ti.xcom_pull('commit') }}''']
+    expected_messages = [MERGE_MESSAGE_1, COMMIT_MESSAGE_1]
 
     # Fetch and verify log messages in bulk.
     task_check_logs_bulk = PythonOperator(
@@ -181,20 +179,20 @@ def lakeFS_workflow():
         op_kwargs={
             'repo': default_args.get('repo'),
             'ref': '''{{ task_instance.xcom_pull(task_ids='merge_branches', key='return_value') }}''',
-            'commits': expectedCommits,
-            'messages': expectedMessages,
+            'commits': expected_commits,
+            'messages': expected_messages,
         })
 
     # Fetch and verify log messages one at a time.
     task_check_logs_individually = PythonOperator(
         task_id='check_logs_individually',
         python_callable=check_logs,
-        op_kwargs= {
+        op_kwargs={
             'repo': default_args.get('repo'),
             'ref': '''{{ task_instance.xcom_pull(task_ids='merge_branches', key='return_value') }}''',
             'amount': 1,
-            'commits': expectedCommits,
-            'messages': expectedMessages,
+            'commits': expected_commits,
+            'messages': expected_messages,
         })
 
     task_delete_branch = LakeFSDeleteBranchOperator(
@@ -213,11 +211,11 @@ def lakeFS_workflow():
         }
     )
 
-    task_create_branch >> task_get_branch_commit >> [task_create_file, task_sense_commit, task_sense_file]
-    task_create_file >> task_commit >> task_create_symlink
-    task_sense_file >> task_get_file >> task_check_contents
-    task_sense_commit >> task_merge >> [task_check_logs_bulk, task_check_logs_individually]
-    [task_check_contents, task_check_logs_bulk, task_check_logs_individually] >> task_delete_branch
+    task_create_branch >> task_get_branch_commit >> [task_upload_file, task_sense_commit, task_sense_file]
+    task_upload_file >> task_commit >> task_create_symlink
+    task_sense_file >> task_get_object >> task_check_expected_prefix
+    task_sense_commit >> task_merge_branches >> [task_check_logs_bulk, task_check_logs_individually]
+    [task_check_expected_prefix, task_check_logs_bulk, task_check_logs_individually] >> task_delete_branch
     task_delete_branch >> task_check_branch_object
 
 

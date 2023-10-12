@@ -46,6 +46,4 @@ class LakeFSUploadOperator(BaseOperator):
         self.log.info("Uploading to path '%s' on lakeFS branch '%s' in repo '%s'",
                       self.path, self.branch, self.repo)
 
-        stats = hook.upload(self.repo, self.branch, self.path, self.content)
-
-        return stats.physical_address
+        return hook.upload(self.repo, self.branch, self.path, self.content)

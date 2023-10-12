@@ -11,9 +11,7 @@ def get_latest_state():
     username = 'admin'
     password = 'admin'
     response = requests.get(url, auth=(username, password))
-    dag_details = {}
-    latest = max(response.json()['dag_runs'], key=lambda k: \
-                 k['execution_date'])
+    latest = max(response.json()['dag_runs'], key=lambda k: k['execution_date'])
     state = latest['state']
     return state
 
@@ -21,8 +19,7 @@ def get_latest_state():
 def dag_state():
     state = get_latest_state()
     timeout = time.time() + 60 * 5  # 5 minutes from now
-    while state != 'success' and state != 'failed' and state \
-        != 'skipped':
+    while state != 'success' and state != 'failed' and state != 'skipped':
         time.sleep(5)
         if time.time() > timeout:
             return 1

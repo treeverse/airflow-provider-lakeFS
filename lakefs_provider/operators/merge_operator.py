@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook

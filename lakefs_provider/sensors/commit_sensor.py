@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from airflow.exceptions import AirflowException
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
 from lakefs_client.exceptions import NotFoundException
@@ -66,5 +65,3 @@ class LakeFSCommitSensor(BaseSensorOperator):
             return None, False
 
         return commit_id, True
-
-

@@ -1,6 +1,6 @@
 """Setup.py for the lakeFS Airflow provider package"""
 
-from setuptools import find_packages, setup
+from setuptools import setup
 import re
 
 with open("README.md", "r") as fh:
@@ -8,8 +8,8 @@ with open("README.md", "r") as fh:
 
 def _get_version(fh):
     r = re.compile("__version__ *= *[\"'](.*)[\"'] *")
-    for l in fh.readlines():
-        m = r.match(l)
+    for line in fh.readlines():
+        m = r.match(line)
         if m:
             return m.group(1)
     raise RuntimeError(f"No lines in {fh.name} define __version__")
@@ -33,7 +33,7 @@ setup(
     packages=['lakefs_provider', 'lakefs_provider.hooks', 'lakefs_provider.links',
               'lakefs_provider.sensors', 'lakefs_provider.operators',
               'lakefs_provider.example_dags'],
-    install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.91.0'],
+    install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.112.1'],
     setup_requires=['setuptools', 'wheel'],
     author='Treeverse',
     author_email='services@treeverse.io',

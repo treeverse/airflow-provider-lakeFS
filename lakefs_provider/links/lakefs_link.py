@@ -5,9 +5,7 @@ from airflow.utils.context import Context
 
 import logging
 
-
 log = logging.getLogger(__name__)
-
 
 LAKEFS_COMMIT_LINK = "{base_url}/repositories/{repo}/commits/{commit_digest}"
 
@@ -36,6 +34,7 @@ class LakeFSLink(BaseOperatorLink):
         value = {'base_url': lakefs_base_url, 'repo': repo, 'commit_digest': commit_digest}
         log.info(f"Persist lakeFS commit data {value}")
         task_instance.xcom_push(context, key=LakeFSLink.key, value=value)
+
 
 LakeFSLink.operators = ["lakefs_provider.operators.commit_operator.LakeFSCommitOperator",
                         "lakefs_provider.operators.commit_operator.LakeFSMergeOperator"]
