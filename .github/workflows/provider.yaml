@@ -30,7 +30,7 @@ jobs:
           LAKECTL_CREDENTIALS_ACCESS_KEY_ID: $${ env.Key }}
           LAKECTL_CREDENTIALS_SECRET_ACCESS_KEY: $${ env.SECRET }}
         ports:
-          8000:8000
+          - 8000:8000
         options: >-
           --health-cmd curl --head --retry 5 --retry-connrefused --retry-delay 1 http://localhost:8000/_health
           --health-interval 10s
@@ -70,7 +70,7 @@ jobs:
 
       - name: Create test repo
         run: |
-          curl -u '${{ env.KEY }}:${{ env.SECRET }}' -H 'Content-Type: application/json' -X POST --data '{"name":"example-repo","storage_namespace":"local://data/"}' http://localhost:8000/api/v1/repositories 
+          curl -u '${{ env.KEY }}:${{ env.SECRET }}' -H 'Content-Type: application/json' -X POST --data '{"name":"example-repo","storage_namespace":"local://data/"}' 'http://localhost:8000/api/v1/repositories'
 
       - name: Run lakeFS DAG
         working-directory: astro
