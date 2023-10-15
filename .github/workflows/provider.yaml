@@ -12,6 +12,21 @@ jobs:
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+    services:
+      lakefs:
+        image: treeverse/lakefs:latest
+        env:
+          LAKEFS_AUTH_ENCRYPT_SECRET_KEY: "some random secret string"
+          LAKEFS_DATABASE_TYPE: local
+          LAKEFS_BLOCKSTORE_TYPE: local
+          LAKEFS_GATEWAYS_S3_DOMAIN_NAME: s3.local.lakefs.io:8000
+          LAKEFS_LOGGING_LEVEL: TRACE
+          LAKEFS_STATS_ENABLED: false
+          LAKEFS_INSTALLATION_USER_NAME: docker
+          LAKEFS_INSTALLATION_ACCESS_KEY_ID: ${{ env.KEY }}
+          LAKEFS_INSTALLATION_SECRET_ACCESS_KEY: ${{ env.SECRET }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,24 +56,15 @@ jobs:
         run: printf "\nRUN pip install --user dist/airflow_provider_lakefs-*-py3-none-any.whl" >> astro/Dockerfile
 
       - name: Start astro
-        run: |
-          cd astro && astro dev start
-
-      - name: spin up lakeFS
-        run: docker-compose -f ops/docker-compose.yaml up --quiet-pull -d && sleep 30
-
-      - name: Setup lakeFS
-        run: |
-          curl localhost:8000/api/v1/setup_lakefs -H "Content-Type: application/json" --request POST --data '{"username":"test","key":{"access_key_id":"${{ env.KEY }}","secret_access_key":"${{ env.SECRET }}"}}'
+        working-directory: astro
+        run: astro dev start
 
       - name: Create test repo
-        run: |
-         export BASIC_AUTH=$(echo -n "${{ env.KEY }}:${{ env.SECRET }}" | base64)
-         curl localhost:8000/api/v1/repositories -H "Content-Type: application/json" -H "Authorization: Basic $(echo $BASIC_AUTH | tr -d ' ')" --request POST --data '{"name":"example-repo","storage_namespace":"local://data/"}'
+        run: curl -u "${{ env.KEY }}:${{ env.SECRET }}" http://localhost:8000/api/v1/repositories -H "Content-Type: application/json" --request POST --data '{"name":"example-repo","storage_namespace":"local://data/"}'
 
       - name: Run lakeFS DAG
+        working-directory: astro
         run: |
-          cd astro
           astro dev run connections add conn_lakefs --conn-type=HTTP --conn-host=http://172.17.0.1:8000 --conn-login="${{ env.KEY }}" --conn-password="${{ env.SECRET }}"
           astro dev run dags unpause lakeFS_workflow
           astro dev run dags trigger lakeFS_workflow
@@ -66,9 +72,7 @@ jobs:
 
       - name : Run DAG state check script
         id : dag_status_id
-        run: |
-            chmod +x dag_status.py
-            python3 dag_status.py
+        run: python3 dag_status.py
 
       - name: Wait until Airflow makes output file available on main
         env:
@@ -95,12 +99,10 @@ jobs:
 
       - name: airflow scheduler logs
         if: ${{ always() }}
-        run: |
-          cd astro
-          astro dev logs --scheduler
+        working-directory: astro
+        run: astro dev logs --scheduler
 
       - name: airflow triggerer logs
         if: ${{ always() }}
-        run: |
-          cd astro
-          astro dev logs --triggerer
+        working-directory: astro
+        run: astro dev logs --triggerer
