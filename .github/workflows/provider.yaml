@@ -26,6 +26,12 @@ jobs:
           LAKEFS_INSTALLATION_USER_NAME: docker
           LAKEFS_INSTALLATION_ACCESS_KEY_ID: ${{ env.KEY }}
           LAKEFS_INSTALLATION_SECRET_ACCESS_KEY: ${{ env.SECRET }}
+          LAKEFS_INSTALLATION_USER_NAME: docker
+          LAKEFS_INSTALLATION_ACCESS_KEY_ID: ${{ env.KEY }}
+          LAKEFS_INSTALLATION_SECRET_ACCESS_KEY: ${{ env.SECRET }}
+          LAKECTL_SERVER_ENDPOINT_URL: http://localhost:8000
+          LAKECTL_CREDENTIALS_ACCESS_KEY_ID: $${ env.Key }}
+          LAKECTL_CREDENTIALS_SECRET_ACCESS_KEY: $${ env.SECRET }}
 
     steps:
       - name: Checkout
@@ -60,7 +66,7 @@ jobs:
         run: astro dev start
 
       - name: Create test repo
-        run: curl -u "${{ env.KEY }}:${{ env.SECRET }}" http://localhost:8000/api/v1/repositories -H "Content-Type: application/json" --request POST --data '{"name":"example-repo","storage_namespace":"local://data/"}'
+        run: docker exec lakectl repo create example-repo local://data/example-repo
 
       - name: Run lakeFS DAG
         working-directory: astro
