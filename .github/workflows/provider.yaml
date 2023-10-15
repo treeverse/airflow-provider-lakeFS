@@ -63,7 +63,7 @@ jobs:
         run: astro dev start
 
       - name: Create test repo
-        run: docker exec lakectl repo create example-repo local://data/example-repo
+        run: docker exec lakefs lakectl repo create example-repo local://data/example-repo
 
       - name: Run lakeFS DAG
         working-directory: astro
