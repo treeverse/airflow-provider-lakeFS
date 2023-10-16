@@ -2,11 +2,11 @@ from typing import Any, Dict, IO, Iterator
 
 from lakefs_provider import __version__
 
-import lakefs_client
-from lakefs_client import models
-from lakefs_client.client import LakeFSClient
-from lakefs_client.model.object_stats import ObjectStats
-from lakefs_client.models import Merge
+import lakefs_sdk
+from lakefs_sdk import models
+from lakefs_sdk.client import LakeFSClient
+from lakefs_sdk.model.object_stats import ObjectStats
+from lakefs_sdk.models import Merge
 
 from airflow.exceptions import AirflowException
 from airflow.hooks.base import BaseHook
@@ -50,7 +50,7 @@ class LakeFSHook(BaseHook):
 
     def get_conn(self) -> LakeFSClient:
         conn = self.get_connection(self.lakefs_conn_id)
-        configuration = lakefs_client.Configuration()
+        configuration = lakefs_sdk.Configuration()
         if conn.conn_type == "http" and conn.extra_dejson.get("access_key_id") and conn.extra_dejson.get("secret_access_key"):
             configuration.username = conn.extra_dejson.get("access_key_id")
             configuration.password = conn.extra_dejson.get("secret_access_key")
