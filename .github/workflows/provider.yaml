@@ -70,12 +70,8 @@ jobs:
         run: astro dev start
 
       - name: Create test repo
-        run: >-
-          curl -sS -X POST
-            -u '${{ env.KEY }}:${{ env.SECRET }}'
-            -H 'Content-Type: application/json'
-            --data '{"name":"example-repo","storage_namespace":"local://data/"}' 
-            http://localhost:8000/api/v1/repositories
+        run: |
+          curl -sS -X POST -u '${{ env.KEY }}:${{ env.SECRET }}' -H 'Content-Type: application/json' --data '{"name":"example-repo","storage_namespace":"local://data/"}' http://localhost:8000/api/v1/repositories
 
       - name: Run lakeFS DAG
         working-directory: astro
