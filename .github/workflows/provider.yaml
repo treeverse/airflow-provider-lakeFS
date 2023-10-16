@@ -32,6 +32,7 @@ jobs:
         ports:
           - 8000:8000
         options: >-
+          --name lakefs
           --health-cmd "curl --fail -LI http://localhost:8000/_health"
           --health-interval 10s
           --health-timeout 5s
