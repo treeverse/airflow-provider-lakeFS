@@ -19,18 +19,19 @@ def get_latest_state():
 
 
 def dag_state():
-    state = get_latest_state()
-    timeout = time.time() + 60 * 5  # 5 minutes from now
-    while state != 'success' and state != 'failed' and state != 'skipped':
-        time.sleep(5)
-        if time.time() > timeout:
-            return 1
+    timeout = time.time() + 60 * 5  # five minutes from now
+    interval = 5 # five seconds
+    while True:
         state = get_latest_state()
-        continue
-    if state == 'success':
-        return 0
-    else:
+        if state == 'success' or state == 'failed' or state == 'skipped':
+            break
+        if time.time()+interval > timeout:
+            break
+        time.sleep(interval)
+    print("dag_state", state)
+    if state != 'success':
         return 1
+    return 0
 
 
 sys.exit(dag_state())
