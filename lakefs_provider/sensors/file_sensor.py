@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from airflow.exceptions import AirflowException
 from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
 from lakefs_client.exceptions import NotFoundException
@@ -48,4 +47,3 @@ class LakeFSFileSensor(BaseSensorOperator):
         except NotFoundException:
             self.log.info("File '%s' not found on branch '%s'", self.path, self.branch)
             return False
-

@@ -1,6 +1,5 @@
 from typing import Any, Dict
 
-from airflow import __version__ as airflow_version
 from airflow.configuration import conf as airflow_conf
 from airflow.models import BaseOperator, DagRun
 from sqlalchemy.exc import SQLAlchemyError

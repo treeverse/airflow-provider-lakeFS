@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 from airflow.utils.decorators import apply_defaults
-from airflow.utils.helpers import build_airflow_url_with_query
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 from lakefs_provider.links.lakefs_link import LakeFSLink
