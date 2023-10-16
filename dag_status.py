@@ -11,7 +11,9 @@ def get_latest_state():
     username = 'admin'
     password = 'admin'
     response = requests.get(url, auth=(username, password))
-    latest = max(response.json()['dag_runs'], key=lambda k: k['execution_date'])
+    response.raise_for_status()
+    dag_runs = response.json()['dag_runs']
+    latest = max(dag_runs, key=lambda k: k['execution_date'])
     state = latest['state']
     return state
 
