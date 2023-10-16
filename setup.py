@@ -33,7 +33,7 @@ setup(
     packages=['lakefs_provider', 'lakefs_provider.hooks', 'lakefs_provider.links',
               'lakefs_provider.sensors', 'lakefs_provider.operators',
               'lakefs_provider.example_dags'],
-    install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.112.1'],
+    install_requires=['apache-airflow>=2.0', 'lakefs_client>=0.113.0'],
     setup_requires=['setuptools', 'wheel'],
     author='Treeverse',
     author_email='services@treeverse.io',
