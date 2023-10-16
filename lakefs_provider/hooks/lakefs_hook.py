@@ -96,11 +96,14 @@ class LakeFSHook(BaseHook):
         return commit.get("id")
 
     def upload(self, repo: str, branch: str, path: str, content: IO) -> str:
+        from lakefs_sdk import ApiClient, ObjectsApi
         client = self.get_conn()
+        api_client = ApiClient(client._api.configuration)
+        objects_api = ObjectsApi(api_client)
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             temp_file.write(content.read())
             temp_file.flush()
-            upload = client.objects_api.upload_object(
+            upload = objects_api.upload_object(
                 repository=repo,
                 branch=branch,
                 path=path,
