@@ -10,7 +10,7 @@ from airflow.decorators import dag
 from airflow.utils.dates import days_ago
 from airflow.exceptions import AirflowFailException
 
-from lakefs_client.exceptions import NotFoundException
+from lakefs_sdk.exceptions import NotFoundException
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 from lakefs_provider.operators.create_branch_operator import LakeFSCreateBranchOperator
 from lakefs_provider.operators.create_symlink_operator import LakeFSCreateSymlinkOperator

@@ -1,6 +1,6 @@
 from unittest.mock import Mock, patch
 
-from lakefs_client.client import LakeFSClient
+from lakefs_sdk.client import LakeFSClient
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
 from lakefs_provider.operators.create_symlink_operator import (
