@@ -2,6 +2,7 @@ from typing import Any, Dict, IO, Iterator
 
 from lakefs_provider import __version__
 
+import tempfile
 import lakefs_sdk
 from lakefs_sdk import models
 from lakefs_sdk.client import LakeFSClient
@@ -96,11 +97,14 @@ class LakeFSHook(BaseHook):
 
     def upload(self, repo: str, branch: str, path: str, content: IO) -> str:
         client = self.get_conn()
-        upload = client.objects_api.upload_object(
-            repository=repo,
-            branch=branch,
-            path=path,
-            content=content)
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            temp_file.write(content.read())
+            temp_file.flush()
+            upload = client.objects_api.upload_object(
+                repository=repo,
+                branch=branch,
+                path=path,
+                content=temp_file.name)
 
         return upload.physical_address
 
