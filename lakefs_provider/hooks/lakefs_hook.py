@@ -5,7 +5,7 @@ from lakefs_provider import __version__
 import lakefs_sdk
 from lakefs_sdk import models
 from lakefs_sdk.client import LakeFSClient
-from lakefs_sdk.model.object_stats import ObjectStats
+from lakefs_sdk.models.object_stats import ObjectStats
 from lakefs_sdk.models import Merge
 
 from airflow.exceptions import AirflowException
