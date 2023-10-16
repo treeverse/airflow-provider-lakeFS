@@ -1,5 +1,9 @@
 # CHANGELOG.md
 
+## 0.48.0
+
+  * Use new lakeFS Python SDK v0.113.0
+
 ## 0.46.2
 
   * Update lakeFS client SDK to v0.101.0.
