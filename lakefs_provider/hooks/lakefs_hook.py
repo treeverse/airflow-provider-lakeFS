@@ -97,8 +97,16 @@ class LakeFSHook(BaseHook):
 
     def upload(self, repo: str, branch: str, path: str, content: IO) -> str:
         from lakefs_sdk import ApiClient, ObjectsApi
-        client = self.get_conn()
-        api_client = ApiClient(client._api.configuration)
+        conn = self.get_connection(self.lakefs_conn_id)
+        configuration = lakefs_sdk.Configuration()
+        if conn.conn_type == "http" and conn.extra_dejson.get("access_key_id") and conn.extra_dejson.get("secret_access_key"):
+            configuration.username = conn.extra_dejson.get("access_key_id")
+            configuration.password = conn.extra_dejson.get("secret_access_key")
+        else:
+            configuration.username = conn.login
+            configuration.password = conn.password
+        configuration.host = conn.host + "/api/v1"
+        api_client = ApiClient(configuration, header_name='X-Lakefs-Client', header_value=self.client_id)
         objects_api = ObjectsApi(api_client)
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             temp_file.write(content.read())
