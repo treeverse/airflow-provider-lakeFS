@@ -50,9 +50,7 @@ jobs:
           python3 -m build
 
       - name: Install astro
-        env:
-          TAG: 0.28.1
-        run: curl -sSL https://install.astronomer.io | sudo bash -s
+        run: curl -sSL https://install.astronomer.io | sudo bash -s -- 0.28.1
 
       - name: Create astro dev env
         run: mkdir astro && cd astro && astro dev init
