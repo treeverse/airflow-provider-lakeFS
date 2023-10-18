@@ -38,5 +38,5 @@ setup(
     author='Treeverse',
     author_email='services@treeverse.io',
     url='https://lakefs.io',
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 )
