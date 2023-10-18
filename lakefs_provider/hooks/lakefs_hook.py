@@ -100,7 +100,7 @@ class LakeFSHook(BaseHook):
             repository=repo,
             branch=branch,
             path=path,
-            content=content)
+            content=content.read())
 
         return upload.physical_address
 
