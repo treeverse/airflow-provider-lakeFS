@@ -8,7 +8,7 @@ on:
 jobs:
   build-provider:
     name: build latest provider
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       KEY: "AKIAIOSFODNN7EXAMPLE"
       SECRET: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
