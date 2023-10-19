@@ -1,5 +1,6 @@
 from unittest.mock import Mock, patch
 
+from lakefs_sdk.models.storage_uri import StorageURI
 from lakefs_sdk.client import LakeFSClient
 
 from lakefs_provider.hooks.lakefs_hook import LakeFSHook
@@ -13,9 +14,11 @@ def test_create_symlink_file(mock_conn):
     # Mock client
     mock_client = Mock(LakeFSClient)()
     mock_conn.return_value = mock_client
-    mock_client.internal_api.create_symlink_file.return_value = {
-        "location": "file://path/to/symlink"
-    }
+
+    # Mock response
+    mock_client.internal_api.create_symlink_file.return_value = StorageURI.from_dict({
+        "location": "file://path/to/symlink",
+    })
 
     # Init Hook
     operator = LakeFSCreateSymlinkOperator(
