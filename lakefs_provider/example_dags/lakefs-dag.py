@@ -4,8 +4,6 @@ from collections import namedtuple
 from itertools import zip_longest
 import time
 
-from io import StringIO
-
 from airflow.decorators import dag
 from airflow.utils.dates import days_ago
 from airflow.exceptions import AirflowFailException
@@ -65,16 +63,10 @@ def check_branch_object(task_instance, repo: str, branch: str, path: str):
     hook = LakeFSHook(default_args['lakefs_conn_id'])
     print(f"Trying to check if the following path exists: lakefs://{repo}/{branch}/{path}")
     try:
-        hook.get_object(repo=repo, ref=branch, path=path)
+        hook.stat_object(repo=repo, ref=branch, path=path)
         raise AirflowFailException("Path found, this is not to be expected.")
     except NotFoundException as e:
         print(f"Path not found, as expected: {e}")
-
-
-class NamedStringIO(StringIO):
-    def __init__(self, content: str, name: str) -> None:
-        super().__init__(content)
-        self.name = name
 
 
 @dag(default_args=default_args,
@@ -105,7 +97,7 @@ def lakeFS_workflow():
     # Create a path.
     task_upload_file = LakeFSUploadOperator(
         task_id='upload_file',
-        content=NamedStringIO(content=f"{CONTENT_PREFIX} @{time.asctime()}", name='content'))
+        content=f"{CONTENT_PREFIX} @{time.asctime()}".encode('utf-8'))
 
     task_get_branch_commit = LakeFSGetCommitOperator(
         do_xcom_push=True,

@@ -3,6 +3,7 @@
 ## 0.48.0
 
   * Use new lakeFS Python SDK v0.113.0
+    Adopt calls and response from lakeFS to new API
 
 ## 0.46.2
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, IO
+from typing import Any, Dict
 
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -19,7 +19,7 @@ class LakeFSUploadOperator(BaseOperator):
     :param path: The path for the desired object.
     :type msg: str
     :param content: Contents of the desired object.
-    :type content: typing.IO
+    :type content: bytes
     """
 
     # Specify the arguments that are allowed to parse with jinja templating
@@ -32,7 +32,7 @@ class LakeFSUploadOperator(BaseOperator):
     ui_color = '#f4a460'
 
     @apply_defaults
-    def __init__(self, lakefs_conn_id: str, repo: str, branch: str, path: str, content: IO = None, **kwargs: Any) -> None:
+    def __init__(self, lakefs_conn_id: str, repo: str, branch: str, path: str, content: bytes, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.lakefs_conn_id = lakefs_conn_id
         self.repo = repo
@@ -43,7 +43,7 @@ class LakeFSUploadOperator(BaseOperator):
     def execute(self, context: Dict[str, Any]) -> Any:
         hook = LakeFSHook(lakefs_conn_id=self.lakefs_conn_id)
 
-        self.log.info("Uploading to path '%s' on lakeFS branch '%s' in repo '%s'",
-                      self.path, self.branch, self.repo)
+        self.log.info("Uploading to path '%s' on lakeFS branch '%s' in repo '%s' (content type: %s)",
+                      self.path, self.branch, self.repo, type(self.content))
 
         return hook.upload(self.repo, self.branch, self.path, self.content)
