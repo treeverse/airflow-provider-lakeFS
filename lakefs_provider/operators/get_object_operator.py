@@ -45,5 +45,4 @@ class LakeFSGetObjectOperator(BaseOperator):
                       self.repo, self.ref, self.path)
 
         contents = hook.get_object(self.repo, self.ref, self.path)
-
-        return str(contents.read(), 'utf-8')
+        return str(contents, 'utf-8')

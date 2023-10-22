@@ -49,13 +49,14 @@ jobs:
           python3 -m pip install build
           python3 -m build
 
-      - name: Install astro
-        env:
-          TAG: 0.28.1
-        run: curl -sSL https://install.astronomer.io | sudo bash -s
+      - name: Install Astro CLI
+        run: curl -sSL https://install.astronomer.io | sudo bash -s -- v1.19.2
 
       - name: Create astro dev env
-        run: mkdir astro && cd astro && astro dev init
+        run: |
+          mkdir astro
+          cd astro
+          astro dev init
 
       - name: Copy files
         run: |
